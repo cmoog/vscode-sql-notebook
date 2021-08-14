@@ -6,16 +6,15 @@
 Execute SQL queries in the VS Code Notebook interface.
 View query output and inspect errors interactively.
 
-<img width="1282" alt="Screen Shot 2021-08-14 at 4 15 15 PM" src="https://user-images.githubusercontent.com/7585078/129460194-f894e71a-51d9-4911-b780-a87fcfe52f06.png">
+<img width="1404" alt="Screen Shot 2021-08-14 at 4 39 47 PM" src="https://user-images.githubusercontent.com/7585078/129460710-11ae842c-6a9f-4d2a-9f67-c68bac00c64f.png">
 
 
 ## Usage
 
 Open a blank `.sql-notebook` file with the `Open With` menu option. Then, select the `SQL Notebook` format.
+<img width="718" alt="Screen Shot 2021-08-14 at 4 39 23 PM" src="https://user-images.githubusercontent.com/7585078/129460717-92487c4f-c121-4d80-85f1-ac8ca0834e7a.png">
 
-<img width="801" alt="Screen Shot 2021-08-14 at 4 15 26 PM" src="https://user-images.githubusercontent.com/7585078/129460200-c34e2ff9-d48a-480d-ae4f-840ebc33ce2e.png">
-
-<img width="946" alt="Screen Shot 2021-08-14 at 4 15 38 PM" src="https://user-images.githubusercontent.com/7585078/129460203-dd86257e-cfb1-47cb-b76f-b25ab16bb3a3.png">
+<img width="798" alt="Screen Shot 2021-08-14 at 4 39 34 PM" src="https://user-images.githubusercontent.com/7585078/129460721-c07c1c9e-6309-4290-9383-9d8955aac44f.png">
 
 ### Connection Config
 
