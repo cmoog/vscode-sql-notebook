@@ -7,7 +7,7 @@
   "repository": {
     "url": "https://github.com/cmoog/vscode-sqlnotebook"
   },
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.59.0"
   },
@@ -28,6 +28,16 @@
     }
   },
   "contributes": {
+    "languages": [
+      {
+        "id": "sqlnotebook",
+        "aliases": ["SQL Notebook", "SQLNotebook"],
+        "extensions": [
+          ".sql-notebook"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
     "notebooks": [
       {
         "type": "sql-notebook",
@@ -35,7 +45,7 @@
         "priority": "option",
         "selector": [
           {
-            "filenamePattern": "*.sql"
+            "filenamePattern": "*.sql-notebook"
           }
         ]
       }
