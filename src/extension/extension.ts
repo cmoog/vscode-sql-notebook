@@ -236,8 +236,8 @@ class SQLNotebookController {
         execution.replaceOutput([
           new vscode.NotebookCellOutput([
             vscode.NotebookCellOutputItem.text(
-              yaml.stringify(header).trimEnd(),
-              'text/x-yaml'
+              `${markdownHeader(header)}\n${markdownRow(header)}`,
+              'text/markdown'
             ),
           ]),
         ]);
