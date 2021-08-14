@@ -53,7 +53,7 @@ class SQLSerializer implements vscode.NotebookSerializer {
         item.languageId
       );
     });
-    if (cells.length < 1 || cells[0].languageId !== 'yaml') {
+    if (cells.length < 1) {
       cells.unshift(
         connectionCell({
           host: 'localhost',
@@ -61,7 +61,8 @@ class SQLSerializer implements vscode.NotebookSerializer {
           user: 'root',
           password: 'test',
           database: 'mysql',
-        })
+        }),
+        new vscode.NotebookCellData(vscode.NotebookCellKind.Code, "SELECT name FROM help_topic", "sql")
       );
     }
 
@@ -137,11 +138,13 @@ class SQLNotebookController {
     _controller: vscode.NotebookController
   ): void {
     for (let cell of cells) {
-      this._doExecution(cell);
+      this.doExecution(cell);
     }
   }
 
-  dispose() {}
+  dispose() {
+    this.connection?.destroy();
+  }
 
   private connection: mysql.Connection | null;
   private createConnection({
@@ -160,7 +163,7 @@ class SQLNotebookController {
     });
   }
 
-  private async _doExecution(cell: vscode.NotebookCell): Promise<void> {
+  private async doExecution(cell: vscode.NotebookCell): Promise<void> {
     const execution = this._controller.createNotebookCellExecution(cell);
     execution.executionOrder = ++this._executionOrder;
     execution.start(Date.now()); // Keep track of elapsed time to execute cell.
