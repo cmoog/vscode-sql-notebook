@@ -1,28 +1,31 @@
-# sqlnotebook
+# VS Code SQL Notebook
 
-⚠️ Work-in-progress starter code for custom notebook renderers in VS Code. Expect this to change as notebooks matures. ⚠️
+> ⚠️ This extension is under active development and is currently in an **alpha** state ⚠️
 
-This starter includes:
+Execute SQL queries in the VS Code Notebook interface.
+View query output and inspect errors interactively.
 
- - 🖥️ TypeScript code to create a simple `NotebookOutputRenderer`
- - 📦 A Webpack build for renderer client code
- - ⚡ Support for hot module reloading and safe boilerplate
- - 🎨 CSS modules support
+<img width="1009" alt="Screen Shot 2021-08-14 at 2 51 30 PM" src="https://user-images.githubusercontent.com/7585078/129458651-270070d2-32fe-46b7-a2f2-4ee9c611d876.png">
 
-### Running this Sample
+## Usage
 
- 1. `cd sqlnotebook`
- 1. `code-insiders .`: Open the folder in VS Code Insiders
- 1. Hit `F5` to build+debug
+Open a blank SQL file with the `Open With` menu option. Then, select the `SQL Notebook` format.
 
-### Structure
+<img width="585" alt="Screen Shot 2021-08-14 at 2 51 57 PM" src="https://user-images.githubusercontent.com/7585078/129458647-d9015433-f879-4ac3-a1ad-3a8380617e82.png">
 
-A Notebook Renderer consists of code that runs in the VS Code Extension Host (Node.js), which registers the renderer and passes data into the UI code running inside a WebView (Browser/DOM).
+<img width="788" alt="Screen Shot 2021-08-14 at 2 52 09 PM" src="https://user-images.githubusercontent.com/7585078/129458646-fcc0139a-a9b0-4fa4-af0e-a4b872f10176.png">
 
-This uses TypeScript project references. There are three projects in the `src` directory:
+### Connection Config
 
- - `extension` contains the code running in Node.js extension host. It's compiled with `tsc`.
- - `client` is the UI code, built by Webpack, with access to the DOM.
- - `common` contains code shared between the extension and client.
+Currently, the SQL Notebooks require you to execute a YAML cell specifying the
+connection configuration with the following schema:
 
-When you run `watch`, `compile`, or `dev`, we invoke both `tsc` and `webpack` to compile the extension and the client portion of the code.
+```yaml
+host: string
+port: number
+user: string
+password: string
+database: string
+```
+
+After executing this cell, executing SQL cells will use the associated connection.

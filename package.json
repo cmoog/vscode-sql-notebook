@@ -1,28 +1,48 @@
 {
   "name": "sqlnotebook",
-  "displayName": "sqlnotebook",
+  "displayName": "SQL Notebook",
+  "publisher": "cmoog",
   "description": "A notebook for exploratory SQL work.",
-  "version": "0.0.1",
+  "preview": true,
+  "repository": {
+    "url": "https://github.com/cmoog/vscode-sqlnotebook"
+  },
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.59.0"
   },
   "categories": [
-    "Other"
+    "Data Science",
+    "Machine Learning",
+    "Notebooks",
+    "Visualization"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onNotebook:sql-notebook"
+  ],
   "main": "./out/extension/extension.js",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": false
+    }
+  },
   "contributes": {
-    "notebookRenderer": [
+    "notebooks": [
       {
-        "id": "sqlnotebook",
-        "entrypoint": "./out/client/index.js",
+        "type": "sql-notebook",
         "displayName": "SQL Notebook",
-        "mimeTypes": ["x-application/sample-json-renderer"]
+        "priority": "option",
+        "selector": [
+          {
+            "filenamePattern": "*.sql"
+          }
+        ]
       }
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile && node out/test/checkNoTestProvider.js",
+    "vscode:prepublish": "npm run compile",
     "compile": "npm run compile:extension && npm run compile:client",
     "compile:extension": "tsc -b",
     "compile:client": "webpack --mode production",
@@ -31,18 +51,18 @@
     "watch:extension": "tsc -b --watch",
     "watch:client": "webpack --mode development --watch",
     "dev": "concurrently -r npm:watch:extension npm:watch:client",
-    "pretest": "npm run compile && npm run lint",
-    "test": "node ./out/test/runTest.js"
+    "fmt": "npx prettier -w ./*.{jsx,ts,tsx,json,yaml,yml,md}"
   },
   "devDependencies": {
+    "@types/escape-html": "^1.0.1",
     "@types/glob": "^7.1.3",
     "@types/mocha": "^8.2.2",
     "@types/node": "14.x",
+    "@types/vscode": "^1.59.0",
+    "@types/vscode-notebook-renderer": "^1.57.8",
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
-    "@types/vscode-notebook-renderer": "^1.57.8",
-    "@types/vscode": "^1.59.0",
     "concurrently": "^5.3.0",
     "css-loader": "^4.2.0",
     "eslint": "^7.27.0",
@@ -56,5 +76,9 @@
     "vscode-test": "^1.5.2",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.0"
+  },
+  "dependencies": {
+    "mysql2": "^2.3.0",
+    "yaml": "^1.10.2"
   }
 }
