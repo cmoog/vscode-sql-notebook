@@ -87,7 +87,7 @@ class SQLSerializer implements vscode.NotebookSerializer {
 const connectionCell = (conn: RawConnectionConfig): vscode.NotebookCellData => {
   return new vscode.NotebookCellData(
     vscode.NotebookCellKind.Code,
-    yaml.stringify(conn),
+    yaml.stringify(conn).trimEnd(),
     'yaml'
   );
 };
@@ -236,8 +236,8 @@ class SQLNotebookController {
         execution.replaceOutput([
           new vscode.NotebookCellOutput([
             vscode.NotebookCellOutputItem.text(
-              '```yaml\n' + yaml.stringify(header) + '\n```',
-              'text/markdown'
+              yaml.stringify(header).trimEnd(),
+              'text/x-yaml'
             ),
           ]),
         ]);

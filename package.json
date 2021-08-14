@@ -5,7 +5,7 @@
   "description": "A notebook for exploratory SQL work.",
   "preview": true,
   "repository": {
-    "url": "https://github.com/cmoog/vscode-sqlnotebook"
+    "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
   "version": "0.0.8",
   "engines": {
