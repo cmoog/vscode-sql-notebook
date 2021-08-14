@@ -13,7 +13,6 @@
   },
   "categories": [
     "Data Science",
-    "Machine Learning",
     "Notebooks",
     "Visualization"
   ],
@@ -27,6 +26,7 @@
       "supported": false
     }
   },
+  "extensionKind": ["workspace"],
   "contributes": {
     "languages": [
       {
