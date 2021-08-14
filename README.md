@@ -1,4 +1,3 @@
-
 # VS Code SQL Notebook
 
 > ⚠️ This extension is under active development and is currently in an **alpha** state ⚠️
@@ -7,7 +6,6 @@ Execute SQL queries in the VS Code Notebook interface.
 View query output and inspect errors interactively.
 
 <img width="1404" alt="Screen Shot 2021-08-14 at 4 39 47 PM" src="https://user-images.githubusercontent.com/7585078/129460710-11ae842c-6a9f-4d2a-9f67-c68bac00c64f.png">
-
 
 ## Usage
 

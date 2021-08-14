@@ -171,6 +171,7 @@ class SQLNotebookController {
       let spec: RawConnectionConfig;
       try {
         spec = yaml.parse(text);
+        validateConnectionConfig(spec);
       } catch (err) {
         execution.replaceOutput([
           new vscode.NotebookCellOutput([
@@ -232,7 +233,7 @@ class SQLNotebookController {
         execution.replaceOutput([
           new vscode.NotebookCellOutput([
             vscode.NotebookCellOutputItem.text(
-              "```yaml\n"+yaml.stringify(header)+"\n```",
+              '```yaml\n' + yaml.stringify(header) + '\n```',
               'text/markdown'
             ),
           ]),
@@ -280,4 +281,18 @@ const markdownHeader = (obj: any): string => {
     .map(() => '--')
     .join(' | ');
   return `| ${keys} |\n| ${divider} |`;
+};
+
+const validateConnectionConfig = (config: RawConnectionConfig) => {
+  requireKey(config, "database");
+  requireKey(config, "user");
+  requireKey(config, "password");
+  requireKey(config, "port");
+  requireKey(config, "host");
+};
+
+const requireKey = (obj: any, key: string) => {
+  if (!obj[key]) {
+    throw new Error(`Missing required property "${key}"`);
+  };
 };
