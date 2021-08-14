@@ -1,10 +1,8 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import * as mysql from 'mysql2';
 import * as yaml from 'yaml';
-// import escape = require('escape-html');
+import { ResultSetHeader } from 'mysql2';
 
 const notebookType = 'sql-notebook';
 
@@ -228,9 +226,26 @@ class SQLNotebookController {
         execution.end(false, Date.now());
         return;
       }
+      // for update/insert/create queries where no data is returned
+      if (result.constructor.name === 'ResultSetHeader') {
+        const header = result as ResultSetHeader;
+        execution.replaceOutput([
+          new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.text(
+              "```yaml\n"+yaml.stringify(header)+"\n```",
+              'text/markdown'
+            ),
+          ]),
+        ]);
+        execution.end(true, Date.now());
+        return;
+      }
       execution.replaceOutput([
         new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(resultToMarkdownTable(result as mysql.RowDataPacket[]), "text/markdown"),
+          vscode.NotebookCellOutputItem.text(
+            resultToMarkdownTable(result as mysql.RowDataPacket[]),
+            'text/markdown'
+          ),
         ]),
       ]);
       execution.end(true, Date.now());
@@ -241,18 +256,28 @@ class SQLNotebookController {
 const resultToMarkdownTable = (result: mysql.RowDataPacket[]): string => {
   if (result.length > 20) {
     result = result.slice(0, 20);
-    result.push(Object.fromEntries(Object.entries(result).map(pair => [pair[0], "..."])) as any);
+    result.push(
+      Object.fromEntries(
+        Object.entries(result).map((pair) => [pair[0], '...'])
+      ) as any
+    );
   }
-  return `${markdownHeader(result[0])}\n${result.map(r => markdownRow(r)).join('\n')}`;
+  return `${markdownHeader(result[0])}\n${result
+    .map((r) => markdownRow(r))
+    .join('\n')}`;
 };
 
 const markdownRow = (row: any): string => {
-  const middle = Object.entries(row).map(pair => pair[1] as string).join(' | ');
+  const middle = Object.entries(row)
+    .map((pair) => pair[1] as string)
+    .join(' | ');
   return `| ${middle} |`;
 };
 
 const markdownHeader = (obj: any): string => {
   const keys = Object.keys(obj).join(' | ');
-  const divider = Object.keys(obj).map(() => '--').join(' | ');
+  const divider = Object.keys(obj)
+    .map(() => '--')
+    .join(' | ');
   return `| ${keys} |\n| ${divider} |`;
 };
