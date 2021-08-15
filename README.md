@@ -2,8 +2,8 @@
 
 > ⚠️ This extension is under active development and is currently in an **alpha** state ⚠️
 
-Execute SQL queries in the VS Code Notebook interface.
-View query output and inspect errors interactively.
+Open SQL files in the VS Code Notebook interface. Execute query blocks
+and view output interactively.
 
 <img width="1277" alt="Screen Shot 2021-08-15 at 11 40 57 AM" src="https://user-images.githubusercontent.com/7585078/129485783-a7451bb2-0ab4-408b-adb2-9c28179b2b45.png">
 
