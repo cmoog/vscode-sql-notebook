@@ -17,6 +17,8 @@ export const deleteConnectionConfiguration =
       .get<ConnData[]>(storageKey, [])
       .filter(({ name }) => name !== item.config.name);
     context.globalState.update(storageKey, without);
+    await context.secrets.delete(item.config.name);
+
     connectionsSidepanel.refresh();
     vscode.window.showInformationMessage(
       `Successfully deleted connection configuration "${item.config.name}"`
@@ -37,6 +39,7 @@ export const addNewConnectionConfiguration =
     const password = await getUserInput('Database Password', false, {
       password: true,
     });
+    const passwordKey = `sqlnotebook.${displayName}`;
     const database = await getUserInput('Database Name', false);
     if (!displayName || !host || !port || !user) {
       vscode.window.showErrorMessage(
@@ -44,12 +47,13 @@ export const addNewConnectionConfiguration =
       );
       return;
     }
+    await context.secrets.store(passwordKey, password || '');
     const config: ConnData = {
       name: displayName,
       database: database || '',
       host: host,
       user: user,
-      passwordKey: password || '',
+      passwordKey,
       port: parseInt(port),
     };
     const existing = context.globalState
@@ -91,11 +95,18 @@ export const connectToDatabase =
       );
       return;
     }
+    const password = await context.secrets.get(match.passwordKey);
+    if (password === undefined) {
+      vscode.window.showErrorMessage(
+        `Connection password not found in secret store.`
+      );
+      return;
+    }
     globalConnPool.pool = mysql.createPool({
       host: match.host,
       port: match.port,
       user: match.user,
-      password: match.passwordKey,
+      password,
       database: match.database,
     });
     try {
@@ -134,4 +145,3 @@ const requiredValidator = (name: string) => (value: string) => {
   }
   return undefined;
 };
-

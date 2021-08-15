@@ -2,12 +2,12 @@
   "name": "sqlnotebook",
   "displayName": "SQL Notebook",
   "publisher": "cmoog",
-  "description": "A notebook for exploratory SQL work.",
+  "description": "View SQL files as notebooks. Execute cells and view query output.",
   "preview": true,
   "repository": {
     "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
-  "version": "0.0.17",
+  "version": "0.0.18",
   "engines": {
     "vscode": "^1.59.0"
   },
@@ -47,6 +47,11 @@
       "view/item/context": [
         {
           "command": "sqlnotebook.connect",
+          "when": "view == sqlnotebook-connections &&  viewItem == database",
+          "group": "inline"
+        },
+        {
+          "command": "sqlnotebook.connect",
           "when": "view == sqlnotebook-connections &&  viewItem == database"
         },
         {
@@ -65,11 +70,15 @@
     "commands": [
       {
         "command": "sqlnotebook.connect",
-        "title": "SQL Notebook: Connect to Database"
+        "title": "Connect to Database",
+        "icon": {
+          "dark": "media/dark/dbconnection.svg",
+          "light": "media/light/dbconnection.svg"
+        }
       },
       {
         "command": "sqlnotebook.addNewConnectionConfiguration",
-        "title": "SQL Notebook: New Connection Configuration",
+        "title": "Create New Connection Configuration",
         "icon": {
           "light": "media/light/plus.svg",
           "dark": "media/dark/plus.svg"
@@ -77,7 +86,7 @@
       },
       {
         "command": "sqlnotebook.deleteConnectionConfiguration",
-        "title": "SQL Notebook: Delete Connection Configuration"
+        "title": "Delete Connection Configuration"
       }
     ],
     "viewsContainers": {
