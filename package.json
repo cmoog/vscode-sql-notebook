@@ -7,7 +7,7 @@
   "repository": {
     "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
-  "version": "0.0.12",
+  "version": "0.0.13",
   "engines": {
     "vscode": "^1.59.0"
   },
@@ -47,6 +47,17 @@
         {
           "command": "sqlnotebook.connect",
           "when": "view == sqlnotebook-connections"
+        },
+        {
+          "command": "sqlnotebook.deleteConnectionConfiguration",
+          "when": "view == sqlnotebook-connections"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "sqlnotebook.addNewConnectionConfiguration",
+          "when": "view == sqlnotebook-connections",
+          "group": "navigation"
         }
       ]
     },
@@ -57,7 +68,11 @@
       },
       {
         "command": "sqlnotebook.addNewConnectionConfiguration",
-        "title": "SQL Notebook: New Connection Configuration"
+        "title": "SQL Notebook: New Connection Configuration",
+        "icon": {
+          "light": "media/plus.svg",
+          "dark": "media/plus.svg"
+        }
       },
       {
         "command": "sqlnotebook.deleteConnectionConfiguration",
@@ -81,6 +96,13 @@
           "visibility": "visible",
           "icon": "media/logo.svg",
           "contextualTitle": "Connections"
+        },
+        {
+          "id": "sqlnotebook-helpfeedback",
+          "name": "Help and Feedback",
+          "visibility": "collapsed",
+          "icon": "media/logo.svg",
+          "contextualTitle": "Help and Feedback"
         }
       ]
     }

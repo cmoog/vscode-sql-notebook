@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { storageKey } from './extension';
 
 export class SQLNotebookConnections
   implements vscode.TreeDataProvider<ConnectionListItem | vscode.TreeItem>
@@ -53,7 +54,7 @@ export class SQLNotebookConnections
     }
     const connections =
       this.context.globalState.get<ConnData[] | null>(
-        'sqlnotebook-connections'
+		  storageKey,
       ) ?? [];
 
     return Promise.resolve(

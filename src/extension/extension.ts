@@ -2,9 +2,14 @@ import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import * as mysql from 'mysql2/promise';
 import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import { ConnData, ConnectionListItem, SQLNotebookConnections } from './connections';
+import {
+  ConnData,
+  ConnectionListItem,
+  SQLNotebookConnections,
+} from './connections';
 
 const notebookType = 'sql-notebook';
+export const storageKey = "sqlnotebook-connections"; 
 
 let connPool: mysql.Pool | null = null;
 
@@ -24,52 +29,32 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.registerCommand(
     'sqlnotebook.deleteConnectionConfiguration',
-    async () => {
-      const connectionDisplayName = await vscode.window.showInputBox({
-        title: 'Connection Display Name',
-        ignoreFocusOut: true,
-      });
+    async (item: ConnectionListItem) => {
       const without = context.globalState
-        .get<ConnData[]>('sqlnotebook-connections', [])
-        .filter(({ name }) => name !== connectionDisplayName);
-      context.globalState.update('sqlnotebook-connections', without);
+        .get<ConnData[]>(storageKey, [])
+        .filter(({ name }) => name !== item.config.name);
+      context.globalState.update(storageKey, without);
       connectionsSidepanel.refresh();
       vscode.window.showInformationMessage(
-        `Successfully deleted connection configuration "${connectionDisplayName}"`
+        `Successfully deleted connection configuration "${item.config.name}"`
       );
+      connectionsSidepanel.refresh();
     }
   );
 
   vscode.commands.registerCommand(
     'sqlnotebook.addNewConnectionConfiguration',
     async () => {
-      const connectionDisplayName = await vscode.window.showInputBox({
-        title: 'Connection Display Name',
-        ignoreFocusOut: true,
-      });
-      const host = await vscode.window.showInputBox({
-        title: 'Database Host',
-        ignoreFocusOut: true,
-      });
-      const port = await vscode.window.showInputBox({
-        title: 'Database Port',
-        ignoreFocusOut: true,
-      });
-      const user = await vscode.window.showInputBox({
-        title: 'Database User',
-        ignoreFocusOut: true,
-      });
-      const password = await vscode.window.showInputBox({
-        title: 'Database Password',
-        ignoreFocusOut: true,
+      const displayName = await getUserInput('Database Display Name ', true);
+      const host = await getUserInput('Database Host', true);
+      const port = await getUserInput('Database Port', true);
+      const user = await getUserInput('Database User', true);
+      const password = await getUserInput('Database Password', false, {
         password: true,
       });
-      const database = await vscode.window.showInputBox({
-        title: 'Database Name',
-        ignoreFocusOut: true,
-      });
-      const a: ConnData = {
-        name: connectionDisplayName || '',
+      const database = await getUserInput('Database Name', false);
+      const config: ConnData = {
+        name: displayName || '',
         database: database || '',
         host: host || '',
         user: user || '',
@@ -77,35 +62,38 @@ export function activate(context: vscode.ExtensionContext) {
         port: parseInt(port || '0'),
       };
       const existing = context.globalState
-        .get<ConnData[]>('sqlnotebook-connections', [])
-        .filter(({ name }) => name !== connectionDisplayName);
-      existing.push(a);
-      context.globalState.update('sqlnotebook-connections', existing);
+        .get<ConnData[]>(storageKey, [])
+        .filter(({ name }) => name !== displayName);
+      existing.push(config);
+      context.globalState.update(storageKey, existing);
       connectionsSidepanel.refresh();
     }
   );
-  vscode.commands.registerCommand('sqlnotebook.connect', async (item: ConnectionListItem) => {
-    const match = context.globalState
-      .get<ConnData[]>('sqlnotebook-connections', [])
-      .find(({ name }) => name === item.config.name);
-    if (!match) {
-      vscode.window.showErrorMessage(
-        `"${item.config.name}" not found. Please add the connection config in the sidebar before connecting.`
+  vscode.commands.registerCommand(
+    'sqlnotebook.connect',
+    async (item: ConnectionListItem) => {
+      const match = context.globalState
+        .get<ConnData[]>(storageKey, [])
+        .find(({ name }) => name === item.config.name);
+      if (!match) {
+        vscode.window.showErrorMessage(
+          `"${item.config.name}" not found. Please add the connection config in the sidebar before connecting.`
+        );
+        return;
+      }
+      connPool = mysql.createPool({
+        host: match.host,
+        port: match.port,
+        user: match.user,
+        password: match.passwordKey,
+        database: match.database,
+      });
+      connectionsSidepanel.setActive(match.name);
+      vscode.window.showInformationMessage(
+        `SQL Notebook: successfully connected to "${match.name}"`
       );
-      return;
     }
-    connPool = mysql.createPool({
-      host: match.host,
-      port: match.port,
-      user: match.user,
-      password: match.passwordKey,
-      database: match.database,
-    });
-    connectionsSidepanel.setActive(match.name);
-    vscode.window.showInformationMessage(
-      `SQL Notebook: successfully connected to "${match.name}"`
-    );
-  });
+  );
 }
 
 export function deactivate() {}
@@ -279,4 +267,25 @@ const writeSuccess = (
     ]),
   ]);
   execution.end(true, Date.now());
+};
+
+const requiredValidator = (name: string) => (value: string) => {
+  if (!value) {
+    return `${name} is required`;
+  }
+  return undefined;
+};
+
+const getUserInput = async (
+  name: string,
+  required: boolean,
+  options?: vscode.InputBoxOptions
+) => {
+  const value = await vscode.window.showInputBox({
+    title: name,
+    validateInput: required ? requiredValidator(name) : undefined,
+    ignoreFocusOut: true,
+    ...options,
+  });
+  return value;
 };
