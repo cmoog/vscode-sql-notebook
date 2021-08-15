@@ -30,19 +30,6 @@
     "workspace"
   ],
   "contributes": {
-    "languages": [
-      {
-        "id": "sqlnotebook",
-        "aliases": [
-          "SQL Notebook",
-          "SQLNotebook"
-        ],
-        "extensions": [
-          ".sql-notebook"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
     "notebooks": [
       {
         "type": "sql-notebook",
@@ -50,7 +37,7 @@
         "priority": "option",
         "selector": [
           {
-            "filenamePattern": "*.sql-notebook"
+            "filenamePattern": "*.sql"
           }
         ]
       }
@@ -93,7 +80,6 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
-    "mysql2": "^2.3.0",
-    "yaml": "^1.10.2"
+    "mysql2": "^2.3.0"
   }
 }

@@ -1,7 +1,6 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import * as mysql from 'mysql2/promise';
-import * as yaml from 'yaml';
 import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 
 const notebookType = 'sql-notebook';
@@ -24,52 +23,13 @@ class SQLSerializer implements vscode.NotebookSerializer {
     _token: vscode.CancellationToken
   ): Promise<vscode.NotebookData> {
     const str = new TextDecoder().decode(context);
-    let raw: RawNotebook;
-    try {
-      raw = JSON.parse(str);
-    } catch {
-      if (str.length > 0) {
-        // if data exists in the sql file, we don't want to lose it,
-        // so inject that existing sql into a new sql notebook cell
-        raw = {
-          cells: [
-            new vscode.NotebookCellData(
-              vscode.NotebookCellKind.Code,
-              str,
-              'sql'
-            ),
-          ],
-        };
-      } else {
-        raw = {
-          cells: [],
-        };
-      }
-    }
-    const cells = raw.cells.map((item) => {
+    const cells = str.split('\n\n').map(query => {
       return new vscode.NotebookCellData(
-        item.kind,
-        item.value,
-        item.languageId
+        vscode.NotebookCellKind.Code,
+        query,
+        'sql'
       );
     });
-    if (cells.length < 1) {
-      cells.unshift(
-        connectionCell({
-          host: 'localhost',
-          port: 3306,
-          user: 'root',
-          password: 'test',
-          database: 'mysql',
-        }),
-        new vscode.NotebookCellData(
-          vscode.NotebookCellKind.Code,
-          'SELECT name FROM help_topic',
-          'sql'
-        )
-      );
-    }
-
     return new vscode.NotebookData(cells);
   }
 
@@ -77,27 +37,8 @@ class SQLSerializer implements vscode.NotebookSerializer {
     data: vscode.NotebookData,
     _token: vscode.CancellationToken
   ): Promise<Uint8Array> {
-    const cells: RawNotebookCell[] = data.cells.map(
-      ({ value, kind, languageId }) => ({ kind, value, languageId })
-    );
-    const notebook: RawNotebook = {
-      cells,
-    };
-
-    return new TextEncoder().encode(JSON.stringify(notebook));
+    return new TextEncoder().encode(data.cells.map(({value}) => value).join('\n'));
   }
-}
-
-const connectionCell = (conn: RawConnectionConfig): vscode.NotebookCellData => {
-  return new vscode.NotebookCellData(
-    vscode.NotebookCellKind.Code,
-    yaml.stringify(conn).trimEnd(),
-    'yaml'
-  );
-};
-
-interface RawNotebook {
-  cells: RawNotebookCell[];
 }
 
 interface RawConnectionConfig {
@@ -108,20 +49,15 @@ interface RawConnectionConfig {
   database: string;
 }
 
-interface RawNotebookCell {
-  kind: vscode.NotebookCellKind;
-  value: string;
-  languageId: string;
-}
-
 class SQLNotebookController {
   readonly controllerId = 'sql-notebook-executor';
   readonly notebookType = notebookType;
   readonly label = 'SQL Notebook';
-  readonly supportedLanguages = ['sql', 'yaml'];
+  readonly supportedLanguages = ['sql'];
 
   private readonly _controller: vscode.NotebookController;
   private _executionOrder = 0;
+  private connPool: mysql.Pool | null;
 
   constructor() {
     this._controller = vscode.notebooks.createNotebookController(
@@ -133,7 +69,14 @@ class SQLNotebookController {
     this._controller.supportedLanguages = this.supportedLanguages;
     this._controller.supportsExecutionOrder = true;
     this._controller.executeHandler = this._execute.bind(this);
-    this.connPool = null;
+    
+    this.connPool = this.connPool = mysql.createPool({
+      host: "localhost",
+      port: 3306,
+      user: "root",
+      database: "chicago_crime",
+      password: "",
+    });;
   }
 
   private _execute(
@@ -150,59 +93,17 @@ class SQLNotebookController {
     this.connPool?.end();
   }
 
-  private connPool: mysql.Pool | null;
-  private async createConnection({
-    host,
-    port,
-    user,
-    database,
-    password,
-  }: RawConnectionConfig) {
-    this.connPool = mysql.createPool({
-      host,
-      port,
-      user,
-      database,
-      password,
-    });
-  }
-
   private async doExecution(cell: vscode.NotebookCell): Promise<void> {
     const execution = this._controller.createNotebookCellExecution(cell);
     execution.executionOrder = ++this._executionOrder;
     execution.start(Date.now());
-
-    // if the cell is json, attempt to connect with that spec
-    if (cell.document.languageId === 'yaml') {
-      const text = cell.document.getText();
-      let spec: RawConnectionConfig;
-      try {
-        spec = yaml.parse(text);
-        validateConnectionConfig(spec);
-      } catch (err) {
-        writeErr(execution, 'Invalid connection config: ' + err.message);
-        return;
-      }
-      await this.createConnection(spec);
-      try {
-        const conn = await this.connPool?.getConnection();
-        await conn?.ping();
-      } catch (err) {
-        this.connPool = null;
-        writeErr(execution, err.message);
-        return;
-      }
-
-      writeSuccess(execution, 'Connected to database');
-      return;
-    }
 
     // this is a sql block
     const rawQuery = cell.document.getText();
     if (!this.connPool) {
       writeErr(
         execution,
-        'No active connection found. Connect to the database by executing a valid YAML config cell first.'
+        'No active connection found. Select a database connection in the SQL sidebar.'
       );
       return;
     }
@@ -280,14 +181,6 @@ const markdownHeader = (obj: any): string => {
     .map(() => '--')
     .join(' | ');
   return `| ${keys} |\n| ${divider} |`;
-};
-
-const validateConnectionConfig = (config: RawConnectionConfig) => {
-  requireKey(config, 'database');
-  requireKey(config, 'user');
-  requireKey(config, 'password');
-  requireKey(config, 'port');
-  requireKey(config, 'host');
 };
 
 const requireKey = (obj: any, key: string) => {
