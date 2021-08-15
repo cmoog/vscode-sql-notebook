@@ -18,7 +18,7 @@ View query output and inspect errors interactively.
 
 ## Usage
 
-Open a blank `.sql-notebook` file with the `Open With` menu option. Then, select the `SQL Notebook` format.
+Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format.
 
 <img width="858" alt="Screen Shot 2021-08-15 at 11 40 27 AM" src="https://user-images.githubusercontent.com/7585078/129485794-cebb2e55-544a-451c-8573-a1bb0e7d9996.png">
 
