@@ -45,9 +45,37 @@
     "commands": [
       {
         "command": "sqlnotebook.connect",
-        "title": "SQL Notebook: Connect to database"
+        "title": "SQL Notebook: Connect to Database"
+      },
+      {
+        "command": "sqlnotebook.addNewConnectionConfiguration",
+        "title": "SQL Notebook: New Connection Configuration"
+      },
+      {
+        "command": "sqlnotebook.deleteConnectionConfiguration",
+        "title": "SQL Notebook: Delete Connection Configuration"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "sqlnotebook",
+          "title": "SQL Notebook",
+          "icon": "media/logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "sqlnotebook": [
+        {
+          "id": "sqlnotebook-connections",
+          "name": "SQL Connections",
+          "visibility": "visible",
+          "icon": "media/logo.svg",
+          "contextualTitle": "Connections"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
