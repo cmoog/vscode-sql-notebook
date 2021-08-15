@@ -7,7 +7,7 @@
   "repository": {
     "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
-  "version": "0.0.15",
+  "version": "0.0.16",
   "engines": {
     "vscode": "^1.59.0"
   },
@@ -17,7 +17,8 @@
     "Visualization"
   ],
   "activationEvents": [
-    "onNotebook:sql-notebook"
+    "onNotebook:sql-notebook",
+    "onView:sqlnotebook"
   ],
   "main": "./out/extension/extension.js",
   "capabilities": {

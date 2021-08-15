@@ -3,15 +3,20 @@ import * as vscode from 'vscode';
 import * as mysql from 'mysql2/promise';
 import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import {
-  ConnData,
-  ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
+import {
+  addNewConnectionConfiguration,
+  connectToDatabase,
+  deleteConnectionConfiguration,
+} from './commands';
 
 const notebookType = 'sql-notebook';
 export const storageKey = 'sqlnotebook-connections';
 
-let connPool: mysql.Pool | null = null;
+export const globalConnPool: { pool: mysql.Pool | null } = {
+  pool: null,
+};
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -29,102 +34,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.commands.registerCommand(
     'sqlnotebook.deleteConnectionConfiguration',
-    async (item: ConnectionListItem) => {
-      const without = context.globalState
-        .get<ConnData[]>(storageKey, [])
-        .filter(({ name }) => name !== item.config.name);
-      context.globalState.update(storageKey, without);
-      connectionsSidepanel.refresh();
-      vscode.window.showInformationMessage(
-        `Successfully deleted connection configuration "${item.config.name}"`
-      );
-      connectionsSidepanel.refresh();
-    }
+    deleteConnectionConfiguration(context, connectionsSidepanel)
   );
 
   vscode.commands.registerCommand(
     'sqlnotebook.addNewConnectionConfiguration',
-    async () => {
-      const displayName = await getUserInput('Database Display Name ', true);
-      const host = await getUserInput('Database Host', true);
-      const port = await getUserInput('Database Port', true);
-      const user = await getUserInput('Database User', true);
-      const password = await getUserInput('Database Password', false, {
-        password: true,
-      });
-      const database = await getUserInput('Database Name', false);
-      if (!displayName || !host || !port || !user) {
-        vscode.window.showErrorMessage(
-          `Invalid connection configuration: name, host, port, and user are required.`
-        );
-        return;
-      }
-      const config: ConnData = {
-        name: displayName,
-        database: database || '',
-        host: host,
-        user: user,
-        passwordKey: password || '',
-        port: parseInt(port),
-      };
-      const existing = context.globalState
-        .get<ConnData[]>(storageKey, [])
-        .filter(({ name }) => name !== displayName);
-      existing.push(config);
-      context.globalState.update(storageKey, existing);
-      connectionsSidepanel.refresh();
-    }
+    addNewConnectionConfiguration(context, connectionsSidepanel)
   );
   vscode.commands.registerCommand(
     'sqlnotebook.connect',
-    async (item?: ConnectionListItem) => {
-      let selectedName: string;
-      if (!item) {
-        const names = context.globalState
-          .get(storageKey, [])
-          .map(({ name }) => name);
-        const namePicked = await vscode.window.showQuickPick(names, {
-          ignoreFocusOut: true,
-        });
-        if (!namePicked) {
-          vscode.window.showErrorMessage(`Invalid database connection name.`);
-          return;
-        }
-        selectedName = namePicked;
-      } else {
-        selectedName = item.config.name;
-      }
-      const match = context.globalState
-        .get<ConnData[]>(storageKey, [])
-        .find(({ name }) => name === selectedName);
-      if (!match) {
-        vscode.window.showErrorMessage(
-          `"${selectedName}" not found. Please add the connection config in the sidebar before connecting.`
-        );
-        return;
-      }
-      connPool = mysql.createPool({
-        host: match.host,
-        port: match.port,
-        user: match.user,
-        password: match.passwordKey,
-        database: match.database,
-      });
-      try {
-        const conn = await connPool.getConnection();
-        await conn.ping();
-        connectionsSidepanel.setActive(match.name);
-        vscode.window.showInformationMessage(
-          `Successfully connected to "${match.name}"`
-        );
-      } catch (err) {
-        vscode.window.showErrorMessage(
-          `Failed to connect to "${match.name}": ${err.message}`
-        );
-        connPool = null;
-        connectionsSidepanel.setActive(null);
-      }
-    }
+    connectToDatabase(context, connectionsSidepanel)
   );
 }
 
@@ -136,29 +55,27 @@ class SQLSerializer implements vscode.NotebookSerializer {
     _token: vscode.CancellationToken
   ): Promise<vscode.NotebookData> {
     const str = new TextDecoder().decode(context);
-    const allBlocks = str.split('\n\n');
-    const cells = allBlocks
-      .filter((q) => q.trim().length > 0) // skip whitespace-only blocks
-      .map((query) => {
-        query = query.trim();
-        const isMarkdown =
-          query.startsWith('/*markdown') && query.endsWith('*/');
-        if (isMarkdown) {
-          const lines = query.split('\n');
-          const innerMarkdown =
-            lines.length > 2 ? lines.slice(1, lines.length - 1).join('\n') : '';
-          return new vscode.NotebookCellData(
-            vscode.NotebookCellKind.Markup,
-            innerMarkdown,
-            'markdown'
-          );
-        }
+    const blocks = splitSqlBlocks(str);
+
+    const cells = blocks.map((query) => {
+      const isMarkdown = query.startsWith('/*markdown') && query.endsWith('*/');
+      if (isMarkdown) {
+        const lines = query.split('\n');
+        const innerMarkdown =
+          lines.length > 2 ? lines.slice(1, lines.length - 1).join('\n') : '';
         return new vscode.NotebookCellData(
-          vscode.NotebookCellKind.Code,
-          query,
-          'sql'
+          vscode.NotebookCellKind.Markup,
+          innerMarkdown,
+          'markdown'
         );
-      });
+      }
+
+      return new vscode.NotebookCellData(
+        vscode.NotebookCellKind.Code,
+        query,
+        'sql'
+      );
+    });
     return new vscode.NotebookData(cells);
   }
 
@@ -210,7 +127,7 @@ class SQLNotebookController {
   }
 
   dispose() {
-    connPool?.end();
+    globalConnPool.pool?.end();
   }
 
   private async doExecution(cell: vscode.NotebookCell): Promise<void> {
@@ -220,14 +137,14 @@ class SQLNotebookController {
 
     // this is a sql block
     const rawQuery = cell.document.getText();
-    if (!connPool) {
+    if (!globalConnPool.pool) {
       writeErr(
         execution,
         'No active connection found. Configure database connections in the SQL Notebook sidepanel.'
       );
       return;
     }
-    const conn = await connPool.getConnection();
+    const conn = await globalConnPool.pool.getConnection();
     execution.token.onCancellationRequested(() => {
       console.debug('got cancellation request');
       (async () => {
@@ -323,23 +240,17 @@ const writeSuccess = (
   execution.end(true, Date.now());
 };
 
-const requiredValidator = (name: string) => (value: string) => {
-  if (!value) {
-    return `${name} is required`;
+const splitSqlBlocks = (raw: string): string[] => {
+  const blocks = [];
+  for (const block of raw.split('\n\n')) {
+    if (block.trim().length > 0) {
+      blocks.push(block);
+      continue;
+    }
+    if (blocks.length < 1) {
+      continue;
+    }
+    blocks[blocks.length - 1] += '\n\n';
   }
-  return undefined;
-};
-
-const getUserInput = async (
-  name: string,
-  required: boolean,
-  options?: vscode.InputBoxOptions
-) => {
-  const value = await vscode.window.showInputBox({
-    title: name,
-    validateInput: required ? requiredValidator(name) : undefined,
-    ignoreFocusOut: true,
-    ...options,
-  });
-  return value;
+  return blocks;
 };
