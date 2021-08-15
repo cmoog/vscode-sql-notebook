@@ -209,8 +209,13 @@ class SQLNotebookController {
     const conn = await this.connPool.getConnection();
     execution.token.onCancellationRequested(() => {
       console.debug('got cancellation request');
-      writeErr(execution, "Query cancelled");
-      conn.destroy();
+      (async () => {
+        // TODO: verify that this works properly
+        conn.release();
+        conn.end();
+        conn.destroy();
+        writeErr(execution, 'Query cancelled');
+      })();
     });
 
     console.debug('executing query', { query: rawQuery });
@@ -223,9 +228,11 @@ class SQLNotebookController {
     try {
       [result] = (await conn.query(rawQuery)) as any;
       console.debug('sql query completed');
+      conn.release();
     } catch (err) {
       console.debug('sql query failed', err);
       writeErr(execution, err.message);
+      conn.release();
       return;
     }
 
@@ -289,14 +296,9 @@ const requireKey = (obj: any, key: string) => {
   }
 };
 
-const writeErr = (
-  execution: vscode.NotebookCellExecution,
-  err: string
-) => {
+const writeErr = (execution: vscode.NotebookCellExecution, err: string) => {
   execution.replaceOutput([
-    new vscode.NotebookCellOutput([
-      vscode.NotebookCellOutputItem.text(err)
-    ]),
+    new vscode.NotebookCellOutput([vscode.NotebookCellOutputItem.text(err)]),
   ]);
   execution.end(false, Date.now());
 };
