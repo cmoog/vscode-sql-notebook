@@ -5,6 +5,8 @@ import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 
 const notebookType = 'sql-notebook';
 
+let connPool: mysql.Pool | null = null;
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer(
@@ -13,6 +15,44 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
   context.subscriptions.push(new SQLNotebookController());
+  vscode.commands.registerCommand('sqlnotebook.connect', async () => {
+    const host = await vscode.window.showInputBox({
+      title: 'Database Host',
+      ignoreFocusOut: true,
+    });
+    const port = await vscode.window.showInputBox({
+      title: 'Database Port',
+      ignoreFocusOut: true,
+    });
+    const user = await vscode.window.showInputBox({
+      title: 'Database User',
+      ignoreFocusOut: true,
+    });
+    const password = await vscode.window.showInputBox({
+      title: 'Database Password',
+      ignoreFocusOut: true,
+      password: true,
+    });
+    const database = await vscode.window.showInputBox({
+      title: 'Database Name',
+      ignoreFocusOut: true,
+    });
+    connPool = mysql.createPool({
+      host,
+      port: parseInt(port!),
+      user,
+      password: password || "",
+      database,
+    });
+  });
+}
+
+interface RawConnectionConfig {
+  host: string;
+  port: number;
+  user: string;
+  password: string;
+  database: string;
 }
 
 export function deactivate() {}
@@ -23,7 +63,7 @@ class SQLSerializer implements vscode.NotebookSerializer {
     _token: vscode.CancellationToken
   ): Promise<vscode.NotebookData> {
     const str = new TextDecoder().decode(context);
-    const cells = str.split('\n\n').map(query => {
+    const cells = str.split('\n\n').map((query) => {
       return new vscode.NotebookCellData(
         vscode.NotebookCellKind.Code,
         query,
@@ -37,16 +77,10 @@ class SQLSerializer implements vscode.NotebookSerializer {
     data: vscode.NotebookData,
     _token: vscode.CancellationToken
   ): Promise<Uint8Array> {
-    return new TextEncoder().encode(data.cells.map(({value}) => value).join('\n'));
+    return new TextEncoder().encode(
+      data.cells.map(({ value }) => value).join('\n')
+    );
   }
-}
-
-interface RawConnectionConfig {
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  database: string;
 }
 
 class SQLNotebookController {
@@ -57,7 +91,6 @@ class SQLNotebookController {
 
   private readonly _controller: vscode.NotebookController;
   private _executionOrder = 0;
-  private connPool: mysql.Pool | null;
 
   constructor() {
     this._controller = vscode.notebooks.createNotebookController(
@@ -69,14 +102,6 @@ class SQLNotebookController {
     this._controller.supportedLanguages = this.supportedLanguages;
     this._controller.supportsExecutionOrder = true;
     this._controller.executeHandler = this._execute.bind(this);
-    
-    this.connPool = this.connPool = mysql.createPool({
-      host: "localhost",
-      port: 3306,
-      user: "root",
-      database: "chicago_crime",
-      password: "",
-    });;
   }
 
   private _execute(
@@ -90,7 +115,7 @@ class SQLNotebookController {
   }
 
   dispose() {
-    this.connPool?.end();
+    connPool?.end();
   }
 
   private async doExecution(cell: vscode.NotebookCell): Promise<void> {
@@ -100,14 +125,14 @@ class SQLNotebookController {
 
     // this is a sql block
     const rawQuery = cell.document.getText();
-    if (!this.connPool) {
+    if (!connPool) {
       writeErr(
         execution,
         'No active connection found. Select a database connection in the SQL sidebar.'
       );
       return;
     }
-    const conn = await this.connPool.getConnection();
+    const conn = await connPool.getConnection();
     execution.token.onCancellationRequested(() => {
       console.debug('got cancellation request');
       (async () => {
@@ -181,12 +206,6 @@ const markdownHeader = (obj: any): string => {
     .map(() => '--')
     .join(' | ');
   return `| ${keys} |\n| ${divider} |`;
-};
-
-const requireKey = (obj: any, key: string) => {
-  if (obj[key] === null || obj[key] === undefined) {
-    throw new Error(`Missing required property "${key}"`);
-  }
 };
 
 const writeErr = (execution: vscode.NotebookCellExecution, err: string) => {

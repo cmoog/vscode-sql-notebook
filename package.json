@@ -41,6 +41,12 @@
           }
         ]
       }
+    ],
+    "commands": [
+      {
+        "command": "sqlnotebook.connect",
+        "title": "Connect to database"
+      }
     ]
   },
   "scripts": {
