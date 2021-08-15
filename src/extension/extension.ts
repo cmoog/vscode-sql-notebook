@@ -1,8 +1,8 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
-import * as mysql from 'mysql2';
+import * as mysql from 'mysql2/promise';
 import * as yaml from 'yaml';
-import { ResultSetHeader } from 'mysql2';
+import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 
 const notebookType = 'sql-notebook';
 
@@ -133,7 +133,7 @@ class SQLNotebookController {
     this._controller.supportedLanguages = this.supportedLanguages;
     this._controller.supportsExecutionOrder = true;
     this._controller.executeHandler = this._execute.bind(this);
-    this.connection = null;
+    this.connPool = null;
   }
 
   private _execute(
@@ -147,18 +147,18 @@ class SQLNotebookController {
   }
 
   dispose() {
-    this.connection?.destroy();
+    this.connPool?.end();
   }
 
-  private connection: mysql.Connection | null;
-  private createConnection({
+  private connPool: mysql.Pool | null;
+  private async createConnection({
     host,
     port,
     user,
     database,
     password,
   }: RawConnectionConfig) {
-    this.connection = mysql.createConnection({
+    this.connPool = mysql.createPool({
       host,
       port,
       user,
@@ -180,90 +180,69 @@ class SQLNotebookController {
         spec = yaml.parse(text);
         validateConnectionConfig(spec);
       } catch (err) {
-        execution.replaceOutput([
-          new vscode.NotebookCellOutput([
-            vscode.NotebookCellOutputItem.text(
-              'Invalid connection config: ' + err
-            ),
-          ]),
-        ]);
-        execution.end(false, Date.now());
+        writeErr(execution, 'Invalid connection config: ' + err.message);
         return;
       }
-      this.createConnection(spec);
-      this.connection?.ping((err) => {
-        let msg: string;
-        if (err) {
-          msg = err.message;
-          this.connection = null;
-        } else {
-          msg = 'Connected to database';
-        }
-        execution.replaceOutput([
-          new vscode.NotebookCellOutput([
-            vscode.NotebookCellOutputItem.text(msg),
-          ]),
-        ]);
-        execution.end(!err, Date.now());
-      });
+      await this.createConnection(spec);
+      try {
+        const conn = await this.connPool?.getConnection();
+        await conn?.ping();
+      } catch (err) {
+        this.connPool = null;
+        writeErr(execution, err.message);
+        return;
+      }
+
+      writeSuccess(execution, 'Connected to database');
       return;
     }
 
     // this is a sql block
     const rawQuery = cell.document.getText();
-    if (!this.connection) {
-      execution.replaceOutput([
-        new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(
-            'No active connection found. Connect to the database by executing a valid YAML config cell first.'
-          ),
-        ]),
-      ]);
-      execution.end(false, Date.now());
+    if (!this.connPool) {
+      writeErr(
+        execution,
+        'No active connection found. Connect to the database by executing a valid YAML config cell first.'
+      );
       return;
     }
+    const conn = await this.connPool.getConnection();
     execution.token.onCancellationRequested(() => {
       console.debug('got cancellation request');
+      writeErr(execution, "Query cancelled");
+      conn.destroy();
     });
 
     console.debug('executing query', { query: rawQuery });
-    this.connection!.query(rawQuery, (err, result) => {
-      console.debug('sql query callback executing', { err, result });
-      if (err) {
-        execution.replaceOutput([
-          new vscode.NotebookCellOutput([
-            vscode.NotebookCellOutputItem.text(
-              `Query failed\nMessage: ${err.message}\nCode: ${err.code}`
-            ),
-          ]),
-        ]);
-        execution.end(false, Date.now());
-        return;
-      }
-      // for update/insert/create queries where no data is returned
-      if (result.constructor.name === 'ResultSetHeader') {
-        const header = result as ResultSetHeader;
-        execution.replaceOutput([
-          new vscode.NotebookCellOutput([
-            vscode.NotebookCellOutputItem.text(
-              `${markdownHeader(header)}\n${markdownRow(header)}`,
-              'text/markdown'
-            ),
-          ]),
-        ]);
-        execution.end(true, Date.now());
-        return;
-      }
-      execution.replaceOutput([
-        new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(
-            resultToMarkdownTable(result as mysql.RowDataPacket[]),
-            'text/markdown'
-          ),
-        ]),
-      ]);
-      execution.end(true, Date.now());
-    });
+    let result:
+      | RowDataPacket[][]
+      | RowDataPacket[]
+      | OkPacket
+      | OkPacket[]
+      | ResultSetHeader;
+    try {
+      [result] = (await conn.query(rawQuery)) as any;
+      console.debug('sql query completed');
+    } catch (err) {
+      console.debug('sql query failed', err);
+      writeErr(execution, err.message);
+      return;
+    }
+
+    if (result.constructor.name === 'ResultSetHeader') {
+      const header = result as ResultSetHeader;
+      writeSuccess(
+        execution,
+        `${markdownHeader(header)}\n${markdownRow(header)}`,
+        'text/markdown'
+      );
+      return;
+    }
+    writeSuccess(
+      execution,
+      resultToMarkdownTable(result as mysql.RowDataPacket[]),
+      'text/markdown'
+    );
   }
 }
 
@@ -308,4 +287,29 @@ const requireKey = (obj: any, key: string) => {
   if (obj[key] === null || obj[key] === undefined) {
     throw new Error(`Missing required property "${key}"`);
   }
+};
+
+const writeErr = (
+  execution: vscode.NotebookCellExecution,
+  err: string
+) => {
+  execution.replaceOutput([
+    new vscode.NotebookCellOutput([
+      vscode.NotebookCellOutputItem.text(err)
+    ]),
+  ]);
+  execution.end(false, Date.now());
+};
+
+const writeSuccess = (
+  execution: vscode.NotebookCellExecution,
+  text: string,
+  mimeType?: string
+) => {
+  execution.replaceOutput([
+    new vscode.NotebookCellOutput([
+      vscode.NotebookCellOutputItem.text(text, mimeType),
+    ]),
+  ]);
+  execution.end(true, Date.now());
 };
