@@ -2,7 +2,7 @@ import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import * as mysql from 'mysql2/promise';
 import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import { ConnData, SQLNotebookConnections } from './connections';
+import { ConnData, ConnectionListItem, SQLNotebookConnections } from './connections';
 
 const notebookType = 'sql-notebook';
 
@@ -81,25 +81,19 @@ export function activate(context: vscode.ExtensionContext) {
         .filter(({ name }) => name !== connectionDisplayName);
       existing.push(a);
       context.globalState.update('sqlnotebook-connections', existing);
+      connectionsSidepanel.refresh();
     }
   );
-  vscode.commands.registerCommand('sqlnotebook.connect', async () => {
-    const displayName = await vscode.window.showInputBox({
-      title: 'Connection Name',
-      ignoreFocusOut: true,
-    });
+  vscode.commands.registerCommand('sqlnotebook.connect', async (item: ConnectionListItem) => {
     const match = context.globalState
       .get<ConnData[]>('sqlnotebook-connections', [])
-      .find(({ name }) => name === displayName);
+      .find(({ name }) => name === item.config.name);
     if (!match) {
       vscode.window.showErrorMessage(
-        `"${displayName}" not found. Please add the connection config in the sidebar before connecting.`
+        `"${item.config.name}" not found. Please add the connection config in the sidebar before connecting.`
       );
       return;
     }
-    vscode.window.showInformationMessage(
-      `Connecting to ${JSON.stringify(match)}`
-    );
     connPool = mysql.createPool({
       host: match.host,
       port: match.port,
@@ -107,6 +101,10 @@ export function activate(context: vscode.ExtensionContext) {
       password: match.passwordKey,
       database: match.database,
     });
+    connectionsSidepanel.setActive(match.name);
+    vscode.window.showInformationMessage(
+      `SQL Notebook: successfully connected to "${match.name}"`
+    );
   });
 }
 
@@ -183,7 +181,7 @@ class SQLNotebookController {
     if (!connPool) {
       writeErr(
         execution,
-        'No active connection found. Run the "Connect to database" command.'
+        'No active connection found. Configure database connections in the SQL Notebook sidepanel.'
       );
       return;
     }

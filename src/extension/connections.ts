@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 export class SQLNotebookConnections
   implements vscode.TreeDataProvider<ConnectionListItem | vscode.TreeItem>
@@ -12,6 +13,7 @@ export class SQLNotebookConnections
 
   constructor(public readonly context: vscode.ExtensionContext) {
     this.refresh();
+    this.activeConn = null;
   }
 
   refresh(): void {
@@ -22,13 +24,31 @@ export class SQLNotebookConnections
     return element;
   }
 
+  public setActive(connName: string) {
+    this.activeConn = connName;
+    this.refresh();
+  }
+  private activeConn: string | null;
+
   getChildren(element?: ConnectionListItem): Thenable<vscode.TreeItem[]> {
     if (element) {
       return Promise.resolve([
-        new vscode.TreeItem(`host: ${element.config.host}`, vscode.TreeItemCollapsibleState.None),
-        new vscode.TreeItem(`port: ${element.config.port}`, vscode.TreeItemCollapsibleState.None),
-        new vscode.TreeItem(`user: ${element.config.user}`, vscode.TreeItemCollapsibleState.None),
-        new vscode.TreeItem(`database: ${element.config.database}`, vscode.TreeItemCollapsibleState.None),
+        new vscode.TreeItem(
+          `host: ${element.config.host}`,
+          vscode.TreeItemCollapsibleState.None
+        ),
+        new vscode.TreeItem(
+          `port: ${element.config.port}`,
+          vscode.TreeItemCollapsibleState.None
+        ),
+        new vscode.TreeItem(
+          `user: ${element.config.user}`,
+          vscode.TreeItemCollapsibleState.None
+        ),
+        new vscode.TreeItem(
+          `database: ${element.config.database}`,
+          vscode.TreeItemCollapsibleState.None
+        ),
       ]);
     }
     const connections =
@@ -41,7 +61,8 @@ export class SQLNotebookConnections
         (config) =>
           new ConnectionListItem(
             config,
-            vscode.TreeItemCollapsibleState.Collapsed
+            config.name === this.activeConn,
+            vscode.TreeItemCollapsibleState.Expanded
           )
       )
     );
@@ -60,9 +81,18 @@ export interface ConnData {
 export class ConnectionListItem extends vscode.TreeItem {
   constructor(
     public readonly config: ConnData,
+    public readonly isActive: boolean,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly command?: vscode.Command
   ) {
     super(config.name, collapsibleState);
+    if (isActive) {
+      this.iconPath = {
+        dark: path.join(mediaDir, 'checkbox.svg'),
+        light: path.join(mediaDir, 'checkbox.svg'),
+      };
+    }
   }
 }
+
+export const mediaDir = path.join(__filename, '..', '..', '..', 'media');

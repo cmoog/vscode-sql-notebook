@@ -42,6 +42,14 @@
         ]
       }
     ],
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "sqlnotebook.connect",
+          "when": "view == sqlnotebook-connections"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "sqlnotebook.connect",
