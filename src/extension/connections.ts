@@ -53,9 +53,7 @@ export class SQLNotebookConnections
       ]);
     }
     const connections =
-      this.context.globalState.get<ConnData[] | null>(
-		  storageKey,
-      ) ?? [];
+      this.context.globalState.get<ConnData[] | null>(storageKey) ?? [];
 
     return Promise.resolve(
       connections.map(
@@ -89,10 +87,18 @@ export class ConnectionListItem extends vscode.TreeItem {
     super(config.name, collapsibleState);
     if (isActive) {
       this.iconPath = {
-        dark: path.join(mediaDir, 'checkbox.svg'),
-        light: path.join(mediaDir, 'checkbox.svg'),
+        dark: path.join(mediaDir, 'dark', 'dbconnection.svg'),
+        light: path.join(mediaDir, 'light', 'dbconnection.svg'),
       };
+      this.description = 'Connected!';
+    } else {
+      this.iconPath = {
+        dark: path.join(mediaDir, 'dark', 'database.svg'),
+        light: path.join(mediaDir, 'light', 'database.svg'),
+      };
+      this.description = 'Inactive';
     }
+    this.contextValue = 'database';
   }
 }
 

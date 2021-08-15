@@ -77,13 +77,29 @@ export function activate(context: vscode.ExtensionContext) {
   );
   vscode.commands.registerCommand(
     'sqlnotebook.connect',
-    async (item: ConnectionListItem) => {
+    async (item?: ConnectionListItem) => {
+      let selectedName: string;
+      if (!item) {
+        const names = context.globalState
+          .get(storageKey, [])
+          .map(({ name }) => name);
+        const namePicked = await vscode.window.showQuickPick(names, {
+          ignoreFocusOut: true,
+        });
+        if (!namePicked) {
+          vscode.window.showErrorMessage(`Invalid database connection name.`);
+          return;
+        }
+        selectedName = namePicked;
+      } else {
+        selectedName = item.config.name;
+      }
       const match = context.globalState
         .get<ConnData[]>(storageKey, [])
-        .find(({ name }) => name === item.config.name);
+        .find(({ name }) => name === selectedName);
       if (!match) {
         vscode.window.showErrorMessage(
-          `"${item.config.name}" not found. Please add the connection config in the sidebar before connecting.`
+          `"${selectedName}" not found. Please add the connection config in the sidebar before connecting.`
         );
         return;
       }
@@ -129,7 +145,6 @@ class SQLSerializer implements vscode.NotebookSerializer {
           query.startsWith('/*markdown') && query.endsWith('*/');
         if (isMarkdown) {
           const lines = query.split('\n');
-          vscode.window.showInformationMessage(JSON.stringify(lines));
           const innerMarkdown =
             lines.length > 2 ? lines.slice(1, lines.length - 1).join('\n') : '';
           return new vscode.NotebookCellData(

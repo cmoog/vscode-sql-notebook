@@ -46,11 +46,11 @@
       "view/item/context": [
         {
           "command": "sqlnotebook.connect",
-          "when": "view == sqlnotebook-connections"
+          "when": "view == sqlnotebook-connections &&  viewItem == database"
         },
         {
           "command": "sqlnotebook.deleteConnectionConfiguration",
-          "when": "view == sqlnotebook-connections"
+          "when": "view == sqlnotebook-connections &&  viewItem == database"
         }
       ],
       "view/title": [
@@ -70,8 +70,8 @@
         "command": "sqlnotebook.addNewConnectionConfiguration",
         "title": "SQL Notebook: New Connection Configuration",
         "icon": {
-          "light": "media/plus.svg",
-          "dark": "media/plus.svg"
+          "light": "media/light/plus.svg",
+          "dark": "media/dark/plus.svg"
         }
       },
       {
