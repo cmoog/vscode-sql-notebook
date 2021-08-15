@@ -62,7 +62,11 @@ class SQLSerializer implements vscode.NotebookSerializer {
           password: 'test',
           database: 'mysql',
         }),
-        new vscode.NotebookCellData(vscode.NotebookCellKind.Code, "SELECT name FROM help_topic", "sql")
+        new vscode.NotebookCellData(
+          vscode.NotebookCellKind.Code,
+          'SELECT name FROM help_topic',
+          'sql'
+        )
       );
     }
 
@@ -166,7 +170,7 @@ class SQLNotebookController {
   private async doExecution(cell: vscode.NotebookCell): Promise<void> {
     const execution = this._controller.createNotebookCellExecution(cell);
     execution.executionOrder = ++this._executionOrder;
-    execution.start(Date.now()); // Keep track of elapsed time to execute cell.
+    execution.start(Date.now());
 
     // if the cell is json, attempt to connect with that spec
     if (cell.document.languageId === 'yaml') {
@@ -218,7 +222,13 @@ class SQLNotebookController {
       execution.end(false, Date.now());
       return;
     }
+    execution.token.onCancellationRequested(() => {
+      console.debug('got cancellation request');
+    });
+
+    console.debug('executing query', { query: rawQuery });
     this.connection!.query(rawQuery, (err, result) => {
+      console.debug('sql query callback executing', { err, result });
       if (err) {
         execution.replaceOutput([
           new vscode.NotebookCellOutput([
@@ -287,15 +297,15 @@ const markdownHeader = (obj: any): string => {
 };
 
 const validateConnectionConfig = (config: RawConnectionConfig) => {
-  requireKey(config, "database");
-  requireKey(config, "user");
-  requireKey(config, "password");
-  requireKey(config, "port");
-  requireKey(config, "host");
+  requireKey(config, 'database');
+  requireKey(config, 'user');
+  requireKey(config, 'password');
+  requireKey(config, 'port');
+  requireKey(config, 'host');
 };
 
 const requireKey = (obj: any, key: string) => {
-  if (!obj[key]) {
+  if (obj[key] === null || obj[key] === undefined) {
     throw new Error(`Missing required property "${key}"`);
-  };
+  }
 };
