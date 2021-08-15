@@ -128,7 +128,7 @@ class SQLNotebookController {
     if (!connPool) {
       writeErr(
         execution,
-        'No active connection found. Select a database connection in the SQL sidebar.'
+        'No active connection found. Run the \"Connect to database\" command.'
       );
       return;
     }
