@@ -5,7 +5,7 @@
 Execute SQL queries in the VS Code Notebook interface.
 View query output and inspect errors interactively.
 
-<img width="1404" alt="Screen Shot 2021-08-14 at 4 39 47 PM" src="https://user-images.githubusercontent.com/7585078/129460710-11ae842c-6a9f-4d2a-9f67-c68bac00c64f.png">
+<img width="1277" alt="Screen Shot 2021-08-15 at 11 40 57 AM" src="https://user-images.githubusercontent.com/7585078/129485783-a7451bb2-0ab4-408b-adb2-9c28179b2b45.png">
 
 ## Progress
 
@@ -14,26 +14,12 @@ View query output and inspect errors interactively.
 - [ ] Automatically configure typed autocomplete (with an LSP)
 - [ ] Improve result rendering
 - [ ] Postgres support
-- [ ] Improve credential experience (store password in VS Code secret store)
+- [ ] Improve credential experience
 
 ## Usage
 
 Open a blank `.sql-notebook` file with the `Open With` menu option. Then, select the `SQL Notebook` format.
-<img width="718" alt="Screen Shot 2021-08-14 at 4 39 23 PM" src="https://user-images.githubusercontent.com/7585078/129460717-92487c4f-c121-4d80-85f1-ac8ca0834e7a.png">
 
-<img width="798" alt="Screen Shot 2021-08-14 at 4 39 34 PM" src="https://user-images.githubusercontent.com/7585078/129460721-c07c1c9e-6309-4290-9383-9d8955aac44f.png">
+<img width="858" alt="Screen Shot 2021-08-15 at 11 40 27 AM" src="https://user-images.githubusercontent.com/7585078/129485794-cebb2e55-544a-451c-8573-a1bb0e7d9996.png">
 
-### Connection Config
-
-Currently, the SQL Notebooks require you to execute a YAML cell specifying the
-connection configuration with the following schema:
-
-```yaml
-host: string
-port: number
-user: string
-password: string
-database: string
-```
-
-After executing this cell, executing SQL cells will use the associated connection.
+<img width="897" alt="Screen Shot 2021-08-15 at 11 40 38 AM" src="https://user-images.githubusercontent.com/7585078/129485799-90adcb51-5f2c-4d23-a2cc-baf731affa39.png">
