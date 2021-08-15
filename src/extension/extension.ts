@@ -9,7 +9,7 @@ import {
 } from './connections';
 
 const notebookType = 'sql-notebook';
-export const storageKey = "sqlnotebook-connections"; 
+export const storageKey = 'sqlnotebook-connections';
 
 let connPool: mysql.Pool | null = null;
 
@@ -53,13 +53,19 @@ export function activate(context: vscode.ExtensionContext) {
         password: true,
       });
       const database = await getUserInput('Database Name', false);
+      if (!displayName || !host || !port || !user) {
+        vscode.window.showErrorMessage(
+          `Invalid connection configuration: name, host, port, and user are required.`
+        );
+        return;
+      }
       const config: ConnData = {
-        name: displayName || '',
+        name: displayName,
         database: database || '',
-        host: host || '',
-        user: user || '',
+        host: host,
+        user: user,
         passwordKey: password || '',
-        port: parseInt(port || '0'),
+        port: parseInt(port),
       };
       const existing = context.globalState
         .get<ConnData[]>(storageKey, [])
@@ -88,10 +94,20 @@ export function activate(context: vscode.ExtensionContext) {
         password: match.passwordKey,
         database: match.database,
       });
-      connectionsSidepanel.setActive(match.name);
-      vscode.window.showInformationMessage(
-        `SQL Notebook: successfully connected to "${match.name}"`
-      );
+      try {
+        const conn = await connPool.getConnection();
+        await conn.ping();
+        connectionsSidepanel.setActive(match.name);
+        vscode.window.showInformationMessage(
+          `Successfully connected to "${match.name}"`
+        );
+      } catch (err) {
+        vscode.window.showErrorMessage(
+          `Failed to connect to "${match.name}": ${err.message}`
+        );
+        connPool = null;
+        connectionsSidepanel.setActive(null);
+      }
     }
   );
 }
@@ -104,13 +120,30 @@ class SQLSerializer implements vscode.NotebookSerializer {
     _token: vscode.CancellationToken
   ): Promise<vscode.NotebookData> {
     const str = new TextDecoder().decode(context);
-    const cells = str.split('\n\n').map((query) => {
-      return new vscode.NotebookCellData(
-        vscode.NotebookCellKind.Code,
-        query,
-        'sql'
-      );
-    });
+    const allBlocks = str.split('\n\n');
+    const cells = allBlocks
+      .filter((q) => q.trim().length > 0) // skip whitespace-only blocks
+      .map((query) => {
+        query = query.trim();
+        const isMarkdown =
+          query.startsWith('/*markdown') && query.endsWith('*/');
+        if (isMarkdown) {
+          const lines = query.split('\n');
+          vscode.window.showInformationMessage(JSON.stringify(lines));
+          const innerMarkdown =
+            lines.length > 2 ? lines.slice(1, lines.length - 1).join('\n') : '';
+          return new vscode.NotebookCellData(
+            vscode.NotebookCellKind.Markup,
+            innerMarkdown,
+            'markdown'
+          );
+        }
+        return new vscode.NotebookCellData(
+          vscode.NotebookCellKind.Code,
+          query,
+          'sql'
+        );
+      });
     return new vscode.NotebookData(cells);
   }
 
@@ -119,7 +152,13 @@ class SQLSerializer implements vscode.NotebookSerializer {
     _token: vscode.CancellationToken
   ): Promise<Uint8Array> {
     return new TextEncoder().encode(
-      data.cells.map(({ value }) => value).join('\n\n')
+      data.cells
+        .map(({ value, kind }) =>
+          kind === vscode.NotebookCellKind.Code
+            ? value
+            : `/*markdown\n${value}\n*/`
+        )
+        .join('\n\n')
     );
   }
 }

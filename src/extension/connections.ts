@@ -25,7 +25,7 @@ export class SQLNotebookConnections
     return element;
   }
 
-  public setActive(connName: string) {
+  public setActive(connName: string | null) {
     this.activeConn = connName;
     this.refresh();
   }
