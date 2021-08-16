@@ -4,8 +4,8 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
+import { DriverKey, getDriver, supportedDrivers } from './driver';
 import { storageKey, globalConnPool } from './extension';
-import * as mysql from 'mysql2/promise';
 
 export const deleteConnectionConfiguration =
   (
@@ -36,6 +36,11 @@ export const addNewConnectionConfiguration =
     const host = await getUserInput('Database Host', true);
     const port = await getUserInput('Database Port', true);
     const user = await getUserInput('Database User', true);
+    const driver = await vscode.window.showQuickPick(supportedDrivers);
+    if (!driver) {
+      vscode.window.showErrorMessage(`A valid driver is required.`);
+      return;
+    }
     const password = await getUserInput('Database Password', false, {
       password: true,
     });
@@ -55,6 +60,7 @@ export const addNewConnectionConfiguration =
       user: user,
       passwordKey,
       port: parseInt(port),
+      driver: driver as DriverKey,
     };
     const existing = context.globalState
       .get<ConnData[]>(storageKey, [])
@@ -102,7 +108,8 @@ export const connectToDatabase =
       );
       return;
     }
-    globalConnPool.pool = mysql.createPool({
+    const driver = getDriver(match.driver);
+    globalConnPool.pool = driver.createPool({
       host: match.host,
       port: match.port,
       user: match.user,

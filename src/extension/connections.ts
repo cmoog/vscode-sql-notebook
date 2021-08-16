@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { storageKey } from './extension';
+import { DriverKey } from './driver';
 
 export class SQLNotebookConnections
   implements vscode.TreeDataProvider<ConnectionListItem | vscode.TreeItem>
@@ -50,6 +51,10 @@ export class SQLNotebookConnections
           `database: ${element.config.database}`,
           vscode.TreeItemCollapsibleState.None
         ),
+        new vscode.TreeItem(
+          `driver: ${element.config.driver}`,
+          vscode.TreeItemCollapsibleState.None
+        ),
       ]);
     }
     const connections =
@@ -75,6 +80,7 @@ export interface ConnData {
   user: string;
   passwordKey: string;
   database: string;
+  driver: DriverKey;
 }
 
 export class ConnectionListItem extends vscode.TreeItem {

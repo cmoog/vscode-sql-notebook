@@ -1,7 +1,5 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
-import * as mysql from 'mysql2/promise';
-import { OkPacket, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import {
   SQLNotebookConnections,
 } from './connections';
@@ -10,11 +8,12 @@ import {
   connectToDatabase,
   deleteConnectionConfiguration,
 } from './commands';
+import { Pool } from './driver';
 
 const notebookType = 'sql-notebook';
 export const storageKey = 'sqlnotebook-connections';
 
-export const globalConnPool: { pool: mysql.Pool | null } = {
+export const globalConnPool: { pool: Pool | null } = {
   pool: null,
 };
 
@@ -148,21 +147,14 @@ class SQLNotebookController {
     execution.token.onCancellationRequested(() => {
       console.debug('got cancellation request');
       (async () => {
-        // TODO: verify that this works properly
         conn.release();
-        conn.end();
         conn.destroy();
         writeErr(execution, 'Query cancelled');
       })();
     });
 
     console.debug('executing query', { query: rawQuery });
-    let result:
-      | RowDataPacket[][]
-      | RowDataPacket[]
-      | OkPacket
-      | OkPacket[]
-      | ResultSetHeader;
+    let result: any;
     try {
       [result] = (await conn.query(rawQuery)) as any;
       console.debug('sql query completed');
@@ -175,7 +167,7 @@ class SQLNotebookController {
     }
 
     if (result.constructor.name === 'ResultSetHeader') {
-      const header = result as ResultSetHeader;
+      const header = result;
       writeSuccess(
         execution,
         `${markdownHeader(header)}\n${markdownRow(header)}`,
@@ -185,13 +177,13 @@ class SQLNotebookController {
     }
     writeSuccess(
       execution,
-      resultToMarkdownTable(result as mysql.RowDataPacket[]),
+      resultToMarkdownTable(result as any),
       'text/markdown'
     );
   }
 }
 
-const resultToMarkdownTable = (result: mysql.RowDataPacket[]): string => {
+const resultToMarkdownTable = (result: any[]): string => {
   if (result.length > 20) {
     result = result.slice(0, 20);
     result.push(
