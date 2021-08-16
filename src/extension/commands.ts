@@ -128,7 +128,7 @@ export const connectToDatabase =
     });
     try {
       const conn = await globalConnPool.pool.getConnection();
-      await conn.ping();
+      await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
       vscode.window.showInformationMessage(
         `Successfully connected to "${match.name}"`

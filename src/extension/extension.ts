@@ -1,8 +1,6 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
-import {
-  SQLNotebookConnections,
-} from './connections';
+import { SQLNotebookConnections } from './connections';
 import {
   addNewConnectionConfiguration,
   connectToDatabase,
@@ -156,8 +154,8 @@ class SQLNotebookController {
     console.debug('executing query', { query: rawQuery });
     let result: any;
     try {
-      [result] = (await conn.query(rawQuery)) as any;
-      console.debug('sql query completed');
+      result = (await conn.query(rawQuery)) as any;
+      console.debug('sql query completed', result);
       conn.release();
     } catch (err) {
       console.debug('sql query failed', err);
@@ -174,6 +172,10 @@ class SQLNotebookController {
         `${markdownHeader(header)}\n${markdownRow(header)}`,
         'text/markdown'
       );
+      return;
+    }
+    if (!result.length) {
+      writeSuccess(execution, 'Successfully executed query');
       return;
     }
     writeSuccess(
