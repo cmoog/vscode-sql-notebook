@@ -33,9 +33,25 @@ export const addNewConnectionConfiguration =
   ) =>
   async () => {
     const displayName = await getUserInput('Database Display Name ', true);
+    if (!displayName) {
+      vscode.window.showErrorMessage(`A valid display name is required.`);
+      return;
+    }
     const host = await getUserInput('Database Host', true);
+    if (!host) {
+      vscode.window.showErrorMessage(`A valid host is required.`);
+      return;
+    }
     const port = await getUserInput('Database Port', true);
+    if (!port) {
+      vscode.window.showErrorMessage(`A valid port is required.`);
+      return;
+    }
     const user = await getUserInput('Database User', true);
+    if (!user) {
+      vscode.window.showErrorMessage(`A valid database user is required.`);
+      return;
+    }
     const driver = await vscode.window.showQuickPick(supportedDrivers);
     if (!driver) {
       vscode.window.showErrorMessage(`A valid driver is required.`);
@@ -46,12 +62,6 @@ export const addNewConnectionConfiguration =
     });
     const passwordKey = `sqlnotebook.${displayName}`;
     const database = await getUserInput('Database Name', false);
-    if (!displayName || !host || !port || !user) {
-      vscode.window.showErrorMessage(
-        `Invalid connection configuration: name, host, port, and user are required.`
-      );
-      return;
-    }
     await context.secrets.store(passwordKey, password || '');
     const config: ConnData = {
       name: displayName,

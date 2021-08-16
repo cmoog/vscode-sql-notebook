@@ -166,6 +166,7 @@ class SQLNotebookController {
       return;
     }
 
+    // TODO: abstract mysql assumption
     if (result.constructor.name === 'ResultSetHeader') {
       const header = result;
       writeSuccess(
