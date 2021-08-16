@@ -10,9 +10,15 @@ export interface Pool {
   end: () => void;
 }
 
+export type QueryResult = ResultTable | string;
+
+export type Row = { [key: string]: string | number | null };
+
+export type ResultTable = Row[];
+
 export interface Conn {
   release: () => void;
-  query: (q: string) => Promise<any[]>;
+  query: (q: string) => Promise<QueryResult>;
   destroy: () => void;
 }
 
@@ -63,9 +69,12 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
     destroy() {
       conn.destroy();
     },
-    async query(q: string): Promise<any[]> {
-      const [result] = await conn.query(q);
-      return result as any[];
+    async query(q: string): Promise<ResultTable> {
+      const [result] = await conn.query(q) as any;
+      if (!result.length) {
+        return [result] as ResultTable;
+      }
+      return result as ResultTable;
     },
     release() {
       conn.release();
@@ -100,8 +109,8 @@ function postgresPool(pool: pg.Pool): Pool {
 
 function postgresConn(conn: pg.PoolClient): Conn {
   return {
-    async query(q: string): Promise<any[]> {
-      const response = (await conn.query(q)) as any;
+    async query(q: string): Promise<ResultTable> {
+      const response = await conn.query(q);
       return response.rows;
     },
     destroy() {

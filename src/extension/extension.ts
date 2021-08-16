@@ -6,7 +6,7 @@ import {
   connectToDatabase,
   deleteConnectionConfiguration,
 } from './commands';
-import { Pool } from './driver';
+import { Pool, QueryResult, ResultTable, Row } from './driver';
 
 const notebookType = 'sql-notebook';
 export const storageKey = 'sqlnotebook-connections';
@@ -152,9 +152,9 @@ class SQLNotebookController {
     });
 
     console.debug('executing query', { query: rawQuery });
-    let result: any;
+    let result: QueryResult;
     try {
-      result = (await conn.query(rawQuery)) as any;
+      result = (await conn.query(rawQuery));
       console.debug('sql query completed', result);
       conn.release();
     } catch (err) {
@@ -164,35 +164,25 @@ class SQLNotebookController {
       return;
     }
 
-    // TODO: abstract mysql assumption
-    if (result.constructor.name === 'ResultSetHeader') {
-      const header = result;
-      writeSuccess(
-        execution,
-        `${markdownHeader(header)}\n${markdownRow(header)}`,
-        'text/markdown'
-      );
-      return;
-    }
     if (!result.length) {
       writeSuccess(execution, 'Successfully executed query');
       return;
     }
     writeSuccess(
       execution,
-      resultToMarkdownTable(result as any),
+      resultToMarkdownTable(result as ResultTable),
       'text/markdown'
     );
   }
 }
 
-const resultToMarkdownTable = (result: any[]): string => {
+const resultToMarkdownTable = (result: ResultTable): string => {
   if (result.length > 20) {
     result = result.slice(0, 20);
     result.push(
       Object.fromEntries(
         Object.entries(result).map((pair) => [pair[0], '...'])
-      ) as any
+      )
     );
   }
   return `${markdownHeader(result[0])}\n${result
@@ -200,14 +190,14 @@ const resultToMarkdownTable = (result: any[]): string => {
     .join('\n')}`;
 };
 
-const markdownRow = (row: any): string => {
+const markdownRow = (row: Row): string => {
   const middle = Object.entries(row)
     .map((pair) => pair[1] as string)
     .join(' | ');
   return `| ${middle} |`;
 };
 
-const markdownHeader = (obj: any): string => {
+const markdownHeader = (obj: Row): string => {
   const keys = Object.keys(obj).join(' | ');
   const divider = Object.keys(obj)
     .map(() => '--')
