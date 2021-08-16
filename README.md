@@ -1,20 +1,21 @@
 # VS Code SQL Notebook
 
-> ⚠️ This extension is under active development and is currently in an **alpha** state ⚠️
+<img align="right" src="media/logo.png" width="100px">
+
+[![GitHub Release](https://img.shields.io/github/v/release/cmoog/vscode-sql-notebook?color=6b9ded&include_prerelease=false)](https://github.com/cmoog/vscode-sql-notebook/releases)
 
 Open SQL files in the VS Code Notebook interface. Execute query blocks
 and view output interactively.
 
 <img width="1277" alt="Screen Shot 2021-08-15 at 11 40 57 AM" src="https://user-images.githubusercontent.com/7585078/129485783-a7451bb2-0ab4-408b-adb2-9c28179b2b45.png">
 
-## Progress
+## Features
 
-- [x] MySQL support
-- [x] Support `query` and `exec` responses
-- [ ] Automatically configure typed autocomplete (with an LSP)
-- [ ] Improve result rendering
-- [ ] Postgres support
-- [ ] Improve credential experience
+- Open any `.sql` file as a Notebook.
+- Execute query blocks in the Notebook UI and view output.
+- Configure database connections in the SQL Notebook sidepanel.
+- Supports MySQL (Postgres support coming soon).
+- (coming soon) Built-in typed autocomplete.
 
 ## Usage
 

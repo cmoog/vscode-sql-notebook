@@ -4,10 +4,11 @@
   "publisher": "cmoog",
   "description": "View SQL files as notebooks. Execute cells and view query output.",
   "preview": true,
+  "icon": "media/logo128.png",
   "repository": {
     "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
-  "version": "0.0.18",
+  "version": "0.0.19",
   "engines": {
     "vscode": "^1.59.0"
   },
