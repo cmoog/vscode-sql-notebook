@@ -8,7 +8,7 @@
   "repository": {
     "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
-  "version": "0.0.21",
+  "version": "0.0.23",
   "engines": {
     "vscode": "^1.59.0"
   },
@@ -156,7 +156,10 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
+    "core-util-is": "^1.0.2",
+    "isarray": "^2.0.5",
     "mysql2": "^2.3.0",
-    "pg": "^8.7.1"
+    "pg": "^8.7.1",
+    "process-nextick-args": "^2.0.1"
   }
 }
