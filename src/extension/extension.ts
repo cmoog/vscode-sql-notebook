@@ -154,7 +154,7 @@ class SQLNotebookController {
     console.debug('executing query', { query: rawQuery });
     let result: QueryResult;
     try {
-      result = (await conn.query(rawQuery));
+      result = await conn.query(rawQuery);
       console.debug('sql query completed', result);
       conn.release();
     } catch (err) {
@@ -180,9 +180,7 @@ const resultToMarkdownTable = (result: ResultTable): string => {
   if (result.length > 20) {
     result = result.slice(0, 20);
     result.push(
-      Object.fromEntries(
-        Object.entries(result).map((pair) => [pair[0], '...'])
-      )
+      Object.fromEntries(Object.entries(result).map((pair) => [pair[0], '...']))
     );
   }
   return `${markdownHeader(result[0])}\n${result
@@ -190,9 +188,17 @@ const resultToMarkdownTable = (result: ResultTable): string => {
     .join('\n')}`;
 };
 
+const escapeNewline = (a: string | number | null): string | number | null => {
+  if (typeof a === 'string') {
+    return a.replace('\n', '\\n').replace('\r', '\\r');
+  }
+  return a;
+};
+
 const markdownRow = (row: Row): string => {
   const middle = Object.entries(row)
-    .map((pair) => pair[1] as string)
+    .map((pair) => pair[1])
+    .map(escapeNewline)
     .join(' | ');
   return `| ${middle} |`;
 };
