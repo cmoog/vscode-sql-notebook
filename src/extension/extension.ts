@@ -190,7 +190,7 @@ const resultToMarkdownTable = (result: ResultTable): string => {
 
 const escapeNewline = (a: string | number | null): string | number | null => {
   if (typeof a === 'string') {
-    return a.replace('\n', '\\n').replace('\r', '\\r');
+    return a.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
   }
   return a;
 };
