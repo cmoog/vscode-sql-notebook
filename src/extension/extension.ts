@@ -168,9 +168,13 @@ class SQLNotebookController {
       writeSuccess(execution, 'Successfully executed query');
       return;
     }
+    if (typeof result === 'string') {
+      writeSuccess(execution, result);
+      return;
+    }
     writeSuccess(
       execution,
-      resultToMarkdownTable(result as ResultTable),
+      resultToMarkdownTable(result),
       'text/markdown'
     );
   }

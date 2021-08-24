@@ -176,10 +176,8 @@ function mssqlConn(req: mssql.Request): Conn {
     },
     async query(q: string): Promise<QueryResult> {
       const res = await req.query(q);
-      if (!res.recordsets.length) {
-        throw new Error(
-          `unexpected response from MSSQL driver: ${JSON.stringify(res)}`
-        );
+      if (res.recordsets.length < 1) {
+        return `Rows affected: ${res.rowsAffected}`;
       }
       return res.recordsets[0];
     },
