@@ -1,7 +1,8 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
+import * as mssql from 'mssql';
 
-export const supportedDrivers = ['mysql', 'postgres'] as const;
+export const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
 
 export type DriverKey = typeof supportedDrivers[number];
 
@@ -31,7 +32,7 @@ interface PoolConfig {
 }
 
 export interface Driver {
-  createPool: (config: PoolConfig) => Pool;
+  createPool: (config: PoolConfig) => Promise<Pool>;
 }
 
 export const getDriver = (driverKey: DriverKey): Driver => {
@@ -40,13 +41,21 @@ export const getDriver = (driverKey: DriverKey): Driver => {
       return new MySQLDriver();
     case 'postgres':
       return new PostgresDriver();
+    case 'mssql':
+      return mssqlDriver();
     default:
       throw new Error(`invalid driver key: ${driverKey}`);
   }
 };
 
 class MySQLDriver implements Driver {
-  createPool({ host, port, user, password, database }: PoolConfig): Pool {
+  async createPool({
+    host,
+    port,
+    user,
+    password,
+    database,
+  }: PoolConfig): Promise<Pool> {
     return mysqlPool(
       mysql.createPool({ host, port, user, password, database })
     );
@@ -70,7 +79,7 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
       conn.destroy();
     },
     async query(q: string): Promise<ResultTable> {
-      const [result] = await conn.query(q) as any;
+      const [result] = (await conn.query(q)) as any;
       if (!result.length) {
         return [result] as ResultTable;
       }
@@ -83,7 +92,13 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
 }
 
 class PostgresDriver implements Driver {
-  createPool({ host, port, user, password, database }: PoolConfig): Pool {
+  async createPool({
+    host,
+    port,
+    user,
+    password,
+    database,
+  }: PoolConfig): Promise<Pool> {
     const pool = new pg.Pool({
       host,
       port,
@@ -119,6 +134,55 @@ function postgresConn(conn: pg.PoolClient): Conn {
     },
     release() {
       conn.release();
+    },
+  };
+}
+
+function mssqlDriver(): Driver {
+  return {
+    async createPool(config: PoolConfig): Promise<Pool> {
+      const conn = await mssql.connect({
+        server: config.host,
+        port: config.port,
+        user: config.user,
+        password: config.password,
+        database: config.database,
+        options: {
+          encrypt: false,
+          trustServerCertificate: true,
+        },
+      });
+      return mssqlPool(conn);
+    },
+  };
+}
+
+function mssqlPool(pool: mssql.ConnectionPool): Pool {
+  return {
+    async getConnection(): Promise<Conn> {
+      const req = new mssql.Request();
+      return mssqlConn(req);
+    },
+    end() {
+      pool.close();
+    },
+  };
+}
+
+function mssqlConn(req: mssql.Request): Conn {
+  return {
+    destroy() {
+      req.cancel();
+    },
+    async query(q: string): Promise<QueryResult> {
+      const res = await req.query(q);
+      if (res.recordsets.length < 1) {
+        return `Rows affected: ${res.rowsAffected}`;
+      }
+      return res.recordsets[0];
+    },
+    release() {
+      // TODO: verify correctness
     },
   };
 }

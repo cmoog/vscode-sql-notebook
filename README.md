@@ -14,7 +14,7 @@ and view output interactively.
 - Open any `.sql` file as a Notebook.
 - Execute query blocks in the Notebook UI and view output.
 - Configure database connections in the SQL Notebook sidepanel.
-- Supports MySQL and Postgres (Oracle support coming soon).
+- Supports MySQL PostgresSQL, and MSSQL (Oracle support coming soon).
 - (coming soon) Built-in typed autocomplete.
 
 ## Usage

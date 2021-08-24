@@ -119,7 +119,7 @@ export const connectToDatabase =
       return;
     }
     const driver = getDriver(match.driver);
-    globalConnPool.pool = driver.createPool({
+    globalConnPool.pool = await driver.createPool({
       host: match.host,
       port: match.port,
       user: match.user,
