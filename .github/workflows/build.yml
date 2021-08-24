@@ -25,9 +25,9 @@ jobs:
       - name: Install vsce
         run: npm install -g vsce
       - name: Package extension
-        run: vsce package --out ${{ env.GITHUB_SHA }}
+        run: vsce package --out sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
-          name: sqlnotebook-${{ env.GITHUB_SHA }}.vsix
-          path: sqlnotebook-${{ env.GITHUB_SHA }}.vsix
+          name: sqlnotebook-${{ github.sha }}.vsix
+          path: sqlnotebook-${{ github.sha }}.vsix
