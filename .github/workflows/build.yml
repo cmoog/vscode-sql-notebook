@@ -18,10 +18,12 @@ jobs:
           node-version: '16.x'
       - name: Install dependencies
         run: yarn
-      - name: Compile extension
-        run: yarn compile
+      - name: Install vsce
+        run: npm install -g vsce
+      - name: Package extension
+        run: vsce package --out ${GITHUB_SHA}
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
           name: sqlnotebook-${GITHUB_SHA}.vsix
-          path: sqlnotebook*.vsix
+          path: sqlnotebook-${GITHUB_SHA}.vsix
