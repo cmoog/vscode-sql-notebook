@@ -2,6 +2,7 @@
 
 <img align="right" src="media/logo.png" width="100px">
 
+![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/cmoog.sqlnotebook)
 [![GitHub Release](https://img.shields.io/github/v/release/cmoog/vscode-sql-notebook?color=6b9ded&include_prerelease=false)](https://github.com/cmoog/vscode-sql-notebook/releases)
 
 Open SQL files in the VS Code Notebook interface. Execute query blocks
