@@ -3,7 +3,7 @@
     "module": "commonjs",
     "target": "ES2019",
     "lib": ["ES2019"],
-    "rootDir": ".",
+    "rootDir": "src",
     "outDir": "./out/extension",
     "types": ["node"],
     "moduleResolution": "node",

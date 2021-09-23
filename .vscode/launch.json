@@ -19,7 +19,7 @@
         "urlFilter": "*notebookRenderer*"
       },
       "trace": true,
-      "preLaunchTask": "npm: dev"
+      "preLaunchTask": "npm: watch"
     },
     {
       "name": "Run Extension (no server)",
