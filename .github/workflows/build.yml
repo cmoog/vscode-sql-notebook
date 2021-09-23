@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: yarn
       - name: Install vsce
-        run: npm install -g vsce
+        run: npm install -g vsce@1.100.0
       - name: Package extension
         run: vsce package --out sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact

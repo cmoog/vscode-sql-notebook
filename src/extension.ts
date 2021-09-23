@@ -159,6 +159,7 @@ class SQLNotebookController {
       conn.release();
     } catch (err) {
       console.debug('sql query failed', err);
+      // @ts-ignore
       writeErr(execution, err.message);
       conn.release();
       return;

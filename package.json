@@ -120,14 +120,9 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "npm run compile:extension && npm run compile:client",
-    "compile:extension": "tsc -b",
-    "compile:client": "webpack --mode production",
+    "compile": "tsc -b",
     "lint": "eslint src --ext ts",
-    "watch": "concurrently -r \"npm:watch:*\"",
-    "watch:extension": "tsc -b --watch",
-    "watch:client": "webpack --mode development --watch",
-    "dev": "concurrently -r npm:watch:extension npm:watch:client",
+    "watch": "tsc -b --watch",
     "fmt": "npx prettier -w ./*.{jsx,ts,tsx,json,yaml,yml,md}"
   },
   "devDependencies": {

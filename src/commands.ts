@@ -135,6 +135,7 @@ export const connectToDatabase =
       );
     } catch (err) {
       vscode.window.showErrorMessage(
+        // @ts-ignore
         `Failed to connect to "${match.name}": ${err.message}`
       );
       globalConnPool.pool = null;
