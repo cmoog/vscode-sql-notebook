@@ -38,9 +38,9 @@ export interface Driver {
 export const getDriver = (driverKey: DriverKey): Driver => {
   switch (driverKey) {
     case 'mysql':
-      return new MySQLDriver();
+      return mysqlDriver();
     case 'postgres':
-      return new PostgresDriver();
+      return postgresDriver();
     case 'mssql':
       return mssqlDriver();
     default:
@@ -48,18 +48,20 @@ export const getDriver = (driverKey: DriverKey): Driver => {
   }
 };
 
-class MySQLDriver implements Driver {
-  async createPool({
-    host,
-    port,
-    user,
-    password,
-    database,
-  }: PoolConfig): Promise<Pool> {
-    return mysqlPool(
-      mysql.createPool({ host, port, user, password, database })
-    );
-  }
+function mysqlDriver(): Driver {
+  return {
+    async createPool({
+      host,
+      port,
+      user,
+      password,
+      database,
+    }: PoolConfig): Promise<Pool> {
+      return mysqlPool(
+        mysql.createPool({ host, port, user, password, database,  })
+      );
+    },
+  };
 }
 
 function mysqlPool(pool: mysql.Pool): Pool {
@@ -91,23 +93,25 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
   };
 }
 
-class PostgresDriver implements Driver {
-  async createPool({
-    host,
-    port,
-    user,
-    password,
-    database,
-  }: PoolConfig): Promise<Pool> {
-    const pool = new pg.Pool({
+function postgresDriver(): Driver {
+  return {
+    async createPool({
       host,
       port,
+      user,
       password,
       database,
-      user,
-    });
-    return postgresPool(pool);
-  }
+    }: PoolConfig): Promise<Pool> {
+      const pool = new pg.Pool({
+        host,
+        port,
+        password,
+        database,
+        user,
+      });
+      return postgresPool(pool);
+    },
+  };
 }
 
 function postgresPool(pool: pg.Pool): Pool {

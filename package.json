@@ -123,7 +123,7 @@
     "compile": "tsc -b",
     "lint": "eslint src --ext ts",
     "watch": "tsc -b --watch",
-    "fmt": "npx prettier -w ./*.{jsx,ts,tsx,json,yaml,yml,md}"
+    "fmt": "npx prettier --write ./*.{jsx,ts,tsx,json,yaml,yml,md}"
   },
   "devDependencies": {
     "@types/escape-html": "^1.0.1",
@@ -155,5 +155,9 @@
     "mssql": "^7.2.1",
     "mysql2": "^2.3.0",
     "pg": "^8.7.1"
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
   }
 }
