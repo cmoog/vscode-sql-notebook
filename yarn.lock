@@ -261,6 +261,28 @@
   resolved "https://registry.yarnpkg.com/@js-joda/core/-/core-3.2.0.tgz#3e61e21b7b2b8a6be746df1335cf91d70db2a273"
   integrity sha512-PMqgJ0sw5B7FKb2d5bWYIoxjri+QlW/Pys7+Rw82jSH0QN3rB05jZ/VrrsUdh1w4+i2kw9JOejXGq/KhDOX7Kg==
 
+"@microsoft/fast-element@^1.6.0", "@microsoft/fast-element@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@microsoft/fast-element/-/fast-element-1.6.2.tgz#414abc9f49fde85e12002e01025c5cc3dddc16ac"
+  integrity sha512-TrFOpe9k9xIK2iLfIG5T2+bavUAWBvAC/KQ/3ecFsK65l9PAZ/j3zlkyLxNrpIksFtUBkfVdV03kwFurZjqzKQ==
+
+"@microsoft/fast-foundation@^2.21.0":
+  version "2.27.1"
+  resolved "https://registry.yarnpkg.com/@microsoft/fast-foundation/-/fast-foundation-2.27.1.tgz#3db3f5c4f4c540957c46a9a024eb8addc41d683c"
+  integrity sha512-HDbyjqhkFxF8LAAsS5hZRVzNTG8wFRem3FuW391hCLh8vP7+JibEFxFIMMSG1sdRkOOzRfWxlsj4gYGpkZgMAw==
+  dependencies:
+    "@microsoft/fast-element" "^1.6.2"
+    "@microsoft/fast-web-utilities" "^5.0.2"
+    tabbable "^5.2.0"
+    tslib "^1.13.0"
+
+"@microsoft/fast-web-utilities@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@microsoft/fast-web-utilities/-/fast-web-utilities-5.0.2.tgz#666631e38108893e4ec63cd8f52025f5f35a34a1"
+  integrity sha512-J8Wy64V1NWF/UjFJ1mvmJNNPChbWobsNkJ8xNaV5/M+VKOQEOheojrOS+RmOUG7DKTBlCLIbUvyXsj1YiCfwkA==
+  dependencies:
+    exenv-es6 "^1.0.0"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -414,9 +436,9 @@
   integrity sha512-u7TD2uuEZTVuitx0iijOJdKI0JLiQP6PsSBSRy2XmHXUOXcp5p1S56NrjOEDoF+PIHd3NL3eO6KTRSf5nukDqQ==
 
 "@types/vscode@^1.59.0":
-  version "1.60.0"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.60.0.tgz#9330c317691b4f53441a18b598768faeeb71618a"
-  integrity sha512-wZt3VTmzYrgZ0l/3QmEbCq4KAJ71K3/hmMQ/nfpv84oH8e81KKwPEoQ5v8dNCxfHFVJ1JabHKmCvqdYOoVm1Ow==
+  version "1.63.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.63.0.tgz#3bddb5b79a93e8fcdd420bb00f7066658c79c70c"
+  integrity sha512-iePu1axOi5WSThV6l2TYcciBIpAlMarjBC8H0y8L8ocsZLxh7MttzwFU3pjoItF5fRVGxHS0Hsvje9jO3yJsfw==
 
 "@types/webpack-env@^1.16.0":
   version "1.16.2"
@@ -496,6 +518,14 @@
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@ungap/promise-all-settled/-/promise-all-settled-1.1.2.tgz#aa58042711d6e3275dd37dc597e5d31e8c290a44"
   integrity sha512-sL/cEvJWAnClXw0wHk85/2L0G6Sj8UB0Ctc1TEMbKSsmpRosqhwj9gWgFRZSrBr2f9tiXISwNhCPmlfqUqyb9Q==
+
+"@vscode/webview-ui-toolkit@^0.8.4":
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/@vscode/webview-ui-toolkit/-/webview-ui-toolkit-0.8.4.tgz#89e157ace8048a64b34a30a86a97727cd3d3de4b"
+  integrity sha512-hIbC/awoqCA+dPDGcFGxPH6OGVF/vsgrol9tv5P+eAdc7YMGvZmtezBgRmdGesJmI6Hvv+Buw8qtXwxSj215Jg==
+  dependencies:
+    "@microsoft/fast-element" "^1.6.0"
+    "@microsoft/fast-foundation" "^2.21.0"
 
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
@@ -1518,6 +1548,11 @@ execa@^5.0.0:
     onetime "^5.1.2"
     signal-exit "^3.0.3"
     strip-final-newline "^2.0.0"
+
+exenv-es6@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/exenv-es6/-/exenv-es6-1.0.0.tgz#bd459136369af17cf33f959b5af58803d4068c80"
+  integrity sha512-fcG/TX8Ruv9Ma6PBaiNsUrHRJzVzuFMP6LtPn/9iqR+nr9mcLeEOGzXQGLC5CVQSXGE98HtzW2mTZkrCA3XrDg==
 
 expand-template@^2.0.3:
   version "2.0.3"
@@ -3447,6 +3482,11 @@ supports-color@^7.1.0:
   dependencies:
     has-flag "^4.0.0"
 
+tabbable@^5.2.0:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/tabbable/-/tabbable-5.2.1.tgz#e3fda7367ddbb172dcda9f871c0fdb36d1c4cd9c"
+  integrity sha512-40pEZ2mhjaZzK0BnI+QGNjJO8UYx9pP5v7BGe17SORTO0OEuuaAwQTkAp8whcZvqon44wKFOikD+Al11K3JICQ==
+
 table@^6.0.9:
   version "6.7.1"
   resolved "https://registry.yarnpkg.com/table/-/table-6.7.1.tgz#ee05592b7143831a8c94f3cee6aae4c1ccef33e2"
@@ -3590,7 +3630,7 @@ ts-loader@^9.2.2:
     micromatch "^4.0.0"
     semver "^7.3.4"
 
-tslib@^1.10.0, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
+tslib@^1.10.0, tslib@^1.13.0, tslib@^1.8.1, tslib@^1.9.0, tslib@^1.9.3:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==

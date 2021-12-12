@@ -88,6 +88,10 @@
       {
         "command": "sqlnotebook.deleteConnectionConfiguration",
         "title": "Delete Connection Configuration"
+      },
+      {
+        "command": "sqlnotebook.refreshConnectionPanel",
+        "title": "Refresh Connection Panel"
       }
     ],
     "viewsContainers": {
@@ -107,6 +111,13 @@
           "visibility": "visible",
           "icon": "media/logo.svg",
           "contextualTitle": "Connections"
+        },
+        {
+          "type": "webview",
+          "id": "sqlnotebook.connectionForm",
+          "name": "New SQL Connection",
+          "contextualTitle": "New Connection",
+          "visibility": "collapsed"
         },
         {
           "id": "sqlnotebook-helpfeedback",
@@ -152,6 +163,7 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
+    "@vscode/webview-ui-toolkit": "^0.8.4",
     "mssql": "^7.2.1",
     "mysql2": "^2.3.0",
     "pg": "^8.7.1"
