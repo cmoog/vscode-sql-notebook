@@ -1,12 +1,9 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { SQLNotebookConnections } from './connections';
-import {
-  addNewConnectionConfiguration,
-  connectToDatabase,
-  deleteConnectionConfiguration,
-} from './commands';
+import { connectToDatabase, deleteConnectionConfiguration } from './commands';
 import { Pool, QueryResult, ResultTable, Row } from './driver';
+import { activateFormProvider } from './form';
 
 const notebookType = 'sql-notebook';
 export const storageKey = 'sqlnotebook-connections';
@@ -27,6 +24,9 @@ export function activate(context: vscode.ExtensionContext) {
     'sqlnotebook-connections',
     connectionsSidepanel
   );
+
+  activateFormProvider(context);
+
   context.subscriptions.push(new SQLNotebookController());
 
   vscode.commands.registerCommand(
@@ -34,10 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
     deleteConnectionConfiguration(context, connectionsSidepanel)
   );
 
-  vscode.commands.registerCommand(
-    'sqlnotebook.addNewConnectionConfiguration',
-    addNewConnectionConfiguration(context, connectionsSidepanel)
-  );
+  vscode.commands.registerCommand('sqlnotebook.refreshConnectionPanel', () => {
+    connectionsSidepanel.refresh();
+  });
   vscode.commands.registerCommand(
     'sqlnotebook.connect',
     connectToDatabase(context, connectionsSidepanel)

@@ -4,7 +4,7 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
-import { DriverKey, getDriver, supportedDrivers } from './driver';
+import { getDriver } from './driver';
 import { storageKey, globalConnPool } from './extension';
 
 export const deleteConnectionConfiguration =
@@ -23,60 +23,6 @@ export const deleteConnectionConfiguration =
     vscode.window.showInformationMessage(
       `Successfully deleted connection configuration "${item.config.name}"`
     );
-    connectionsSidepanel.refresh();
-  };
-
-export const addNewConnectionConfiguration =
-  (
-    context: vscode.ExtensionContext,
-    connectionsSidepanel: SQLNotebookConnections
-  ) =>
-  async () => {
-    const displayName = await getUserInput('Database Display Name ', true);
-    if (!displayName) {
-      vscode.window.showErrorMessage(`A valid display name is required.`);
-      return;
-    }
-    const host = await getUserInput('Database Host', true);
-    if (!host) {
-      vscode.window.showErrorMessage(`A valid host is required.`);
-      return;
-    }
-    const port = await getUserInput('Database Port', true);
-    if (!port) {
-      vscode.window.showErrorMessage(`A valid port is required.`);
-      return;
-    }
-    const user = await getUserInput('Database User', true);
-    if (!user) {
-      vscode.window.showErrorMessage(`A valid database user is required.`);
-      return;
-    }
-    const driver = await vscode.window.showQuickPick(supportedDrivers);
-    if (!driver) {
-      vscode.window.showErrorMessage(`A valid driver is required.`);
-      return;
-    }
-    const password = await getUserInput('Database Password', false, {
-      password: true,
-    });
-    const passwordKey = `sqlnotebook.${displayName}`;
-    const database = await getUserInput('Database Name', false);
-    await context.secrets.store(passwordKey, password || '');
-    const config: ConnData = {
-      name: displayName,
-      database: database || '',
-      host: host,
-      user: user,
-      passwordKey,
-      port: parseInt(port),
-      driver: driver as DriverKey,
-    };
-    const existing = context.globalState
-      .get<ConnData[]>(storageKey, [])
-      .filter(({ name }) => name !== displayName);
-    existing.push(config);
-    context.globalState.update(storageKey, existing);
     connectionsSidepanel.refresh();
   };
 
@@ -142,24 +88,3 @@ export const connectToDatabase =
       connectionsSidepanel.setActive(null);
     }
   };
-
-const getUserInput = async (
-  name: string,
-  required: boolean,
-  options?: vscode.InputBoxOptions
-) => {
-  const value = await vscode.window.showInputBox({
-    title: name,
-    validateInput: required ? requiredValidator(name) : undefined,
-    ignoreFocusOut: true,
-    ...options,
-  });
-  return value;
-};
-
-const requiredValidator = (name: string) => (value: string) => {
-  if (!value) {
-    return `${name} is required`;
-  }
-  return undefined;
-};
