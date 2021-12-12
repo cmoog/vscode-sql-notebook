@@ -78,14 +78,6 @@
         }
       },
       {
-        "command": "sqlnotebook.addNewConnectionConfiguration",
-        "title": "Create New Connection Configuration",
-        "icon": {
-          "light": "media/light/plus.svg",
-          "dark": "media/dark/plus.svg"
-        }
-      },
-      {
         "command": "sqlnotebook.deleteConnectionConfiguration",
         "title": "Delete Connection Configuration"
       },
@@ -117,7 +109,7 @@
           "id": "sqlnotebook.connectionForm",
           "name": "New SQL Connection",
           "contextualTitle": "New Connection",
-          "visibility": "collapsed"
+          "visibility": "visible"
         },
         {
           "id": "sqlnotebook-helpfeedback",

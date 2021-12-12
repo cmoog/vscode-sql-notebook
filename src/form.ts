@@ -110,10 +110,6 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
       <script type="module" src="${toolkitUri}"></script>
       <title>SQL Notebook New Connection</title>
       <style>
-
-      .flex-between { display: flex; justify-content: space-between; }
-      .label { color: var(--vscode-editor-foreground); }
-
       </style>
     </head>
     <body>

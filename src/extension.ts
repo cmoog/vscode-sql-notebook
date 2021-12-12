@@ -34,11 +34,6 @@ export function activate(context: vscode.ExtensionContext) {
     deleteConnectionConfiguration(context, connectionsSidepanel)
   );
 
-  vscode.commands.registerCommand(
-    'sqlnotebook.addNewConnectionConfiguration',
-    () => {}
-  );
-
   vscode.commands.registerCommand('sqlnotebook.refreshConnectionPanel', () => {
     connectionsSidepanel.refresh();
   });
