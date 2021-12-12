@@ -4,10 +4,6 @@ function init() {
   const formElement = document.getElementById('connection-form');
   const createElement = document.getElementById('create-btn');
   const cancelElement = document.getElementById('cancel-btn');
-  // const driverElement = document.getElementById('config-body');
-  // const dropdownElement = document.getElementById('driver-dropdown');
-
-  // const oldState = vscode.getState() || { driver: 'mysql' };
 
   createElement.addEventListener('click', () => {
     const formData = Object.fromEntries(new FormData(formElement));
@@ -26,13 +22,6 @@ function init() {
         formElement.reset();
     }
   });
-
-  //   dropdownElement.addEventListener('click', (e) => {
-  //     console.log('changed driver to', e);
-  //     oldState.driver = e.currentTarget.value;
-  //     // document.getElementById('driver-config').innerHTML =
-  //     //   JSON.stringify(oldState);
-  //   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

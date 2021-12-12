@@ -22,13 +22,11 @@ class SQLConfigurationViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext<unknown>,
+    _context: vscode.WebviewViewResolveContext<unknown>,
     _token: vscode.CancellationToken
   ): void | Thenable<void> {
     webviewView.webview.options = {
-      // Allow scripts in the webview
       enableScripts: true,
-
       enableForms: true,
       localResourceRoots: [this.context.extensionUri],
     };
@@ -130,7 +128,6 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
         <vscode-text-field name="password" type="password"><span style="color: var(--vscode-editor-foreground);">Database Password</span></vscode-text-field>
         <vscode-text-field name="database"><span style="color: var(--vscode-editor-foreground);">Database Name</span></vscode-text-field>
 
-        <div id="config-body"></div>
         <div style="display: flex; justify-content: space-between;">
           <vscode-button appearance="secondary" id="cancel-btn">Cancel</vscode-button>
           <vscode-button id="create-btn">Create</vscode-button>
