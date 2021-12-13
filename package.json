@@ -7,7 +7,7 @@
   "repository": {
     "url": "https://github.com/cmoog/vscode-sql-notebook"
   },
-  "version": "0.1.1",
+  "version": "0.2.0",
   "preview": false,
   "engines": {
     "vscode": "^1.59.0"
