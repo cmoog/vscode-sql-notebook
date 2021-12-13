@@ -1,0 +1,37 @@
+on:
+  create:
+    tags: "v*"
+name: Publish Extension
+
+permissions:
+  actions: none
+  checks: none
+  contents: read
+  deployments: none
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn
+      - name: Install vsce
+        run: npm install -g vsce@1.100.0
+      - name: Package extension
+        run: vsce package --out sqlnotebook-${{ github.ref }}.vsix
+      - name: Upload vsix as artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: sqlnotebook-${{ github.ref }}.vsix
+          path: sqlnotebook-${{ github.ref }}.vsix
+      - name: Publish Extension
+        run: vsce publish ./sqlnotebook-${{ github.ref }}.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_CREDENTIALS }}

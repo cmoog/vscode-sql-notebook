@@ -129,7 +129,7 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
         <vscode-text-field name="database"><span style="color: var(--vscode-editor-foreground);">Database Name</span></vscode-text-field>
 
         <div style="display: flex; justify-content: space-between;">
-          <vscode-button appearance="secondary" id="cancel-btn">Cancel</vscode-button>
+          <vscode-button appearance="secondary" id="cancel-btn">Clear</vscode-button>
           <vscode-button id="create-btn">Create</vscode-button>
         </div>
       </form>
