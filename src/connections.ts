@@ -73,15 +73,15 @@ export class SQLNotebookConnections
   }
 }
 
-export interface ConnData {
+export type ConnData = {
+  driver: DriverKey;
   name: string;
   host: string;
   port: number;
   user: string;
   passwordKey: string;
   database: string;
-  driver: DriverKey;
-}
+};
 
 export class ConnectionListItem extends vscode.TreeItem {
   constructor(

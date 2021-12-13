@@ -4,7 +4,7 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
-import { getDriver } from './driver';
+import { getPool } from './driver';
 import { storageKey, globalConnPool } from './extension';
 
 export const deleteConnectionConfiguration =
@@ -64,14 +64,7 @@ export const connectToDatabase =
       );
       return;
     }
-    const driver = getDriver(match.driver);
-    globalConnPool.pool = await driver.createPool({
-      host: match.host,
-      port: match.port,
-      user: match.user,
-      password,
-      database: match.database,
-    });
+    globalConnPool.pool = await getPool({ password, ...match });
     try {
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
