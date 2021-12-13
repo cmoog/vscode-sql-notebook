@@ -1,5 +1,5 @@
 on:
-  create:
+  push:
     tags: "v*"
 name: Publish Extension
 
@@ -16,7 +16,7 @@ permissions:
   statuses: none
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
