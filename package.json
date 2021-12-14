@@ -60,18 +60,13 @@
           "when": "view == sqlnotebook-connections &&  viewItem == database"
         }
       ],
-      "view/title": [
-        {
-          "command": "sqlnotebook.addNewConnectionConfiguration",
-          "when": "view == sqlnotebook-connections",
-          "group": "navigation"
-        }
-      ]
+      "view/title": []
     },
     "commands": [
       {
         "command": "sqlnotebook.connect",
-        "title": "Connect to Database",
+        "title": "SQL Notebook: Connect to Database",
+        "shortTitle": "Connect to Database",
         "icon": {
           "dark": "media/dark/dbconnection.svg",
           "light": "media/light/dbconnection.svg"
@@ -79,11 +74,13 @@
       },
       {
         "command": "sqlnotebook.deleteConnectionConfiguration",
-        "title": "Delete Connection Configuration"
+        "title": "SQL Notebook: Delete Connection Configuration",
+        "shortTitle": "Delete Configuration"
       },
       {
         "command": "sqlnotebook.refreshConnectionPanel",
-        "title": "Refresh Connection Panel"
+        "title": "SQL Notebook: Refresh Connection Panel",
+        "shortTitle": "Refresh"
       }
     ],
     "viewsContainers": {
