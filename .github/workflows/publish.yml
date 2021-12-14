@@ -33,7 +33,11 @@ jobs:
         with:
           name: sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
           path: sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
-      - name: Publish Extension
+      - name: Publish Extension to Microsoft Marketplace
         run: vsce publish --packagePath ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_CREDENTIALS }}
+      - name: Install OpenVSX CLI
+        run: npm install -g ovsx
+      - name: Publish to OpenVSX
+        run: npx ovsx publish ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix -p ${{ secrets.OPEN_VSX_CREDENTIALS }}
