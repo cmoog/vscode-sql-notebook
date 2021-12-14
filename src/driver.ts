@@ -2,7 +2,7 @@ import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
 
-export const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
+const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
 
 export type DriverKey = typeof supportedDrivers[number];
 
@@ -17,7 +17,7 @@ export type Row = { [key: string]: string | number | null };
 
 export type ResultTable = Row[];
 
-export interface Conn {
+interface Conn {
   release: () => void;
   query: (q: string) => Promise<QueryResult>;
   destroy: () => void;
