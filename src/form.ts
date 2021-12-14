@@ -122,11 +122,37 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
           </vscode-dropdown>
         </div>
 
-        <vscode-text-field name="host"><span style="color: var(--vscode-editor-foreground);">Database Host</span></vscode-text-field>
-        <vscode-text-field name="port"><span style="color: var(--vscode-editor-foreground);">Database Port</span></vscode-text-field>
-        <vscode-text-field name="user"><span style="color: var(--vscode-editor-foreground);">Database User</span></vscode-text-field>
-        <vscode-text-field name="password" type="password"><span style="color: var(--vscode-editor-foreground);">Database Password</span></vscode-text-field>
-        <vscode-text-field name="database"><span style="color: var(--vscode-editor-foreground);">Database Name</span></vscode-text-field>
+        ${schemaToFields([
+          { key: 'host', label: 'Database Host', type: 'string' },
+          { key: 'port', label: 'Database Port', type: 'string' },
+          { key: 'user', label: 'Database User', type: 'string' },
+          { key: 'password', label: 'Database Password', type: 'password' },
+          { key: 'database', label: 'Database Name', type: 'string' },
+        ])}
+
+        <div id="driver-specific-configuration"></div>
+        <script type="module">
+        function setConfig(html) {
+          document.getElementById("driver-specific-configuration").innerHTML = html
+        }
+        document.getElementById("driver-dropdown").addEventListener("change", (e) => {
+          console.log("CHANGE", e)
+          // postgres, mysql, mssql
+          switch(e.target.value) {
+            case 'mysql': 
+              setConfig(\`${schemaToFields([])}\`)
+              break
+            case 'postgres':
+              setConfig(\`${schemaToFields([])}\`)
+              break
+            case 'mssql':
+              setConfig(\`${schemaToFields([
+                { type: 'boolean', key: 'encrypt', label: 'Encrypt' },
+              ])}\`)
+              break
+          }
+        })
+        </script>
 
         <div style="display: flex; justify-content: space-between;">
           <vscode-button appearance="secondary" id="cancel-btn">Clear</vscode-button>
@@ -145,4 +171,36 @@ function getUri(
   pathList: string[]
 ) {
   return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+}
+
+type Field = { key: string; label: string } & (
+  | { type: 'string' }
+  | { type: 'password' }
+  | { type: 'number' }
+  | { type: 'boolean' }
+  | {
+      type: 'option';
+      options: string[];
+    }
+);
+
+// schemaToFields accepts a schema describing the
+// desired configuration data. Then, it returns an html string
+// containing the necessary form elements that will allow the user to enter
+// data of this shape.
+function schemaToFields(fields: Field[]): string {
+  return fields
+    .map((field) => {
+      switch (field.type) {
+        case 'string':
+          return `<vscode-text-field name="${field.key}"><span style="color: var(--vscode-editor-foreground);">${field.label}</span></vscode-text-field>`;
+        case 'password':
+          return `<vscode-text-field name="${field.key}" type="password"><span style="color: var(--vscode-editor-foreground);">${field.label}</span></vscode-text-field>`;
+        case 'boolean':
+          return `<vscode-checkbox value="false" name="${field.key}">${field.label}</vscode-checkbox>`;
+        default:
+          throw Error(`unknown field: ${field}`);
+      }
+    })
+    .join('\n');
 }

@@ -155,6 +155,7 @@ function postgresConn(conn: pg.PoolClient): Conn {
 
 interface MSSQLConfig extends BaseConfig {
   driver: 'mssql';
+  encrypt: boolean;
 }
 
 function mssqlDriver(): Driver<MSSQLConfig> {
@@ -167,7 +168,7 @@ function mssqlDriver(): Driver<MSSQLConfig> {
         password: config.password,
         database: config.database,
         options: {
-          encrypt: false,
+          encrypt: config.encrypt,
         },
       });
       return mssqlPool(conn);

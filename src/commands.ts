@@ -50,7 +50,7 @@ export const connectToDatabase =
     }
     const match = context.globalState
       .get<ConnData[]>(storageKey, [])
-      .find(({ name }) => name === selectedName);
+      .find(({ name }) => name === selectedName) as any; // TODO: fix any
     if (!match) {
       vscode.window.showErrorMessage(
         `"${selectedName}" not found. Please add the connection config in the sidebar before connecting.`
@@ -80,4 +80,4 @@ export const connectToDatabase =
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
     }
-  };
+  };;
