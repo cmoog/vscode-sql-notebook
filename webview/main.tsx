@@ -8,13 +8,17 @@ declare global {
       'vscode-text-field': any;
       'vscode-dropdown': any;
       'vscode-option': any;
+      'vscode-checkbox': any;
     }
   }
 }
 
+// @ts-ignore
+const vscode = acquireVsCodeApi();
+
 function createConnection(config: any) {
   // @ts-ignore
-  const vscode = acquireVsCodeApi();
+  console.log({ config });
   vscode.postMessage({ type: 'create_connection', data: config });
 }
 
@@ -24,8 +28,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function useDropdownValue() {
-  // TODO: this will cause problems... if only the web component could be controlled
-  const [value, setValue] = React.useState<string | null>(null);
+  // warning, this is hacky
+  // since the dropdown web component does not seem to respect
+  // setting `value` as a controlled prop, this can easily get out of sync.
+  //
+  // so we have to manually ensure that during form resets
+  // the value is in sync.
+  const [value, setValue] = React.useState<string>('mysql');
   const ref = React.useRef<HTMLInputElement>(null);
   React.useEffect(() => {
     const { current } = ref;
@@ -34,17 +43,27 @@ function useDropdownValue() {
       setValue(e.target?.value);
     });
   }, [ref.current]);
-  return { ref, value };
+  return { ref, value, setValue };
 }
 
 function handleSubmit(form: HTMLFormElement) {
   // @ts-ignore
   const data = Object.fromEntries(new FormData(form));
+
+  // now for some data cleanup
+  if (data.encrypt) {
+    // if "on", we want `true`, if nullish, we want false
+    data.encrypt = !!data.encrypt;
+  }
   createConnection(data);
 }
 
 const App: React.FC<{}> = () => {
-  const { ref: dropdownRef, value } = useDropdownValue();
+  const {
+    ref: dropdownRef,
+    value: driver,
+    setValue: setDriver,
+  } = useDropdownValue();
   const formRef = React.useRef<HTMLFormElement>(null);
 
   React.useEffect(() => {
@@ -53,6 +72,7 @@ const App: React.FC<{}> = () => {
       switch (data.type) {
         case 'clear_form':
           formRef.current?.reset();
+          setDriver('mysql');
       }
     });
   }, []);
@@ -67,7 +87,7 @@ const App: React.FC<{}> = () => {
         >
           Database Driver
         </label>
-        <vscode-dropdown name="driver" id="driver-dropdown" ref={dropdownRef}>
+        <vscode-dropdown name="driver" ref={dropdownRef}>
           <vscode-option>mysql</vscode-option>
           <vscode-option>postgres</vscode-option>
           <vscode-option>mssql</vscode-option>
@@ -83,10 +103,15 @@ const App: React.FC<{}> = () => {
       />
       <TextOption label="Database Name" objectKey="database" />
 
+      {showDriverConfig(driver)}
+
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <vscode-button
           appearance="secondary"
-          onClick={() => formRef.current?.reset()}
+          onClick={() => {
+            formRef.current?.reset();
+            setDriver('mysql');
+          }}
         >
           Clear
         </vscode-button>
@@ -100,6 +125,25 @@ const App: React.FC<{}> = () => {
     </form>
   );
 };
+
+function showDriverConfig(driver: string) {
+  console.log('showing driver config', { driver });
+  switch (driver) {
+    case 'mysql':
+      return <></>;
+    case 'postgres':
+      return <></>;
+    case 'mssql':
+      return (
+        <>
+          <vscode-checkbox name="encrypt" checked>
+            Encrypt
+          </vscode-checkbox>
+        </>
+      );
+  }
+  return <></>;
+}
 
 const TextOption: React.FC<{
   label: string;

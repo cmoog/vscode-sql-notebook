@@ -38,24 +38,24 @@ class SQLConfigurationViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (message) => {
       switch (message.type) {
         case 'create_connection':
-          const { displayName, database, driver, host, password, port, user } =
-            message.data;
+          const { displayName, password, port, ...rest } = message.data;
 
           const passwordKey = `sqlnotebook.${displayName}`;
 
-          const newConfig: ConnData = {
+          const newConfig = {
+            ...rest,
             name: displayName,
-            database,
-            driver,
-            host,
             passwordKey,
             port: parseInt(port),
-            user,
           };
+
           if (!isValid(newConfig)) {
             return;
           }
           await this.context.secrets.store(passwordKey, password || '');
+
+          // this ensures we don't store the password in plain text
+          delete newConfig.password;
 
           const existing = this.context.globalState
             .get<ConnData[]>(storageKey, [])

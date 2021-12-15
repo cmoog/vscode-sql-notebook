@@ -145,6 +145,7 @@ interface MSSQLConfig extends BaseConfig {
 }
 
 async function createMSSQLPool(config: MSSQLConfig): Promise<Pool> {
+  console.log('creating mssql pool', { config });
   const conn = await mssql.connect({
     server: config.host,
     port: config.port,
