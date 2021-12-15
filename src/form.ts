@@ -102,11 +102,11 @@ async function getWebviewContent(
     'dist',
     'toolkit.js',
   ]);
-  const formJs = getUri(webview, extensionUri, ['out', 'webview', 'main.js']);
-  const html = await vscode.workspace.fs.readFile(
-    vscode.Uri.joinPath(extensionUri, 'out', 'webview', 'index.html')
-  );
-  return new TextDecoder('utf-8').decode(html);
+  const bundlePath = getUri(webview, extensionUri, [
+    'out',
+    'webview',
+    'main-bundle.js',
+  ]);
 
   return `
   <!DOCTYPE html>
@@ -169,8 +169,7 @@ async function getWebviewContent(
           <vscode-button id="create-btn">Create</vscode-button>
         </div>
       </form>
-      <script>var exports = {};</script>
-      <script src="${formJs}"></script>
+      <script src="${bundlePath}"></script>
     </body>
   </html>
 `;
