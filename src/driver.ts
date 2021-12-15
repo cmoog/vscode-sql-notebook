@@ -23,7 +23,7 @@ interface Conn {
   destroy: () => void;
 }
 
-type Config = MySQLConfig | MSSQLConfig | PostgresConfig;
+export type PoolConfig = MySQLConfig | MSSQLConfig | PostgresConfig;
 
 interface BaseConfig {
   driver: DriverKey;
@@ -38,7 +38,7 @@ interface MySQLConfig extends BaseConfig {
   driver: 'mysql';
 }
 
-export async function getPool(c: Config): Promise<Pool> {
+export async function getPool(c: PoolConfig): Promise<Pool> {
   switch (c.driver) {
     case 'mysql':
       return createMySQLPool(c);

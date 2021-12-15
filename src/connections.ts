@@ -81,6 +81,8 @@ export type ConnData = {
   user: string;
   passwordKey: string;
   database: string;
+} & {
+  [key: string]: any;
 };
 
 export class ConnectionListItem extends vscode.TreeItem {

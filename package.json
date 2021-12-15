@@ -68,8 +68,7 @@
     "commands": [
       {
         "command": "sqlnotebook.connect",
-        "title": "SQL Notebook: Connect to Database",
-        "shortTitle": "Connect to Database",
+        "title": "Connect to Database",
         "icon": {
           "dark": "media/dark/dbconnection.svg",
           "light": "media/light/dbconnection.svg"
@@ -77,12 +76,11 @@
       },
       {
         "command": "sqlnotebook.deleteConnectionConfiguration",
-        "title": "SQL Notebook: Delete Connection Configuration",
-        "shortTitle": "Delete Configuration"
+        "title": "Delete SQL Connection Configuration"
       },
       {
         "command": "sqlnotebook.refreshConnectionPanel",
-        "title": "SQL Notebook: Refresh Connection Panel",
+        "title": "Refresh SQL Connection Panel",
         "shortTitle": "Refresh"
       }
     ],

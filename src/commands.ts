@@ -4,7 +4,7 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
-import { getPool } from './driver';
+import { getPool, PoolConfig } from './driver';
 import { storageKey, globalConnPool } from './extension';
 
 export const deleteConnectionConfiguration =
@@ -51,7 +51,7 @@ export const connectToDatabase =
 
     const match = context.globalState
       .get<ConnData[]>(storageKey, [])
-      .find(({ name }) => name === selectedName) as any; // TODO: fix any
+      .find(({ name }) => name === selectedName);
     if (!match) {
       vscode.window.showErrorMessage(
         `"${selectedName}" not found. Please add the connection config in the sidebar before connecting.`
@@ -65,7 +65,7 @@ export const connectToDatabase =
       );
       return;
     }
-    globalConnPool.pool = await getPool({ password, ...match });
+    globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
     try {
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
