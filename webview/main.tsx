@@ -18,7 +18,6 @@ const vscode = acquireVsCodeApi();
 
 function createConnection(config: any) {
   // @ts-ignore
-  console.log({ config });
   vscode.postMessage({ type: 'create_connection', data: config });
 }
 
@@ -127,7 +126,6 @@ const App: React.FC<{}> = () => {
 };
 
 function showDriverConfig(driver: string) {
-  console.log('showing driver config', { driver });
   switch (driver) {
     case 'mysql':
       return <></>;
