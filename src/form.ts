@@ -1,3 +1,4 @@
+import { TextDecoder } from 'util';
 import * as vscode from 'vscode';
 import { ConnData } from './connections';
 import { storageKey } from './extension';
@@ -20,18 +21,18 @@ class SQLConfigurationViewProvider implements vscode.WebviewViewProvider {
     this.context = context;
   }
 
-  resolveWebviewView(
+  async resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext<unknown>,
     _token: vscode.CancellationToken
-  ): void | Thenable<void> {
+  ): Promise<void> {
     webviewView.webview.options = {
       enableScripts: true,
       enableForms: true,
       localResourceRoots: [this.context.extensionUri],
     };
 
-    webviewView.webview.html = getWebviewContent(
+    webviewView.webview.html = await getWebviewContent(
       webviewView.webview,
       this.context.extensionUri
     );
@@ -88,8 +89,12 @@ function isValid(config: ConnData): boolean {
   }
   return true;
 }
+// testing
 
-function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
+async function getWebviewContent(
+  webview: vscode.Webview,
+  extensionUri: vscode.Uri
+) {
   const toolkitUri = getUri(webview, extensionUri, [
     'node_modules',
     '@vscode',
@@ -97,7 +102,11 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
     'dist',
     'toolkit.js',
   ]);
-  const formJs = getUri(webview, extensionUri, ['media', 'webview', 'form.js']);
+  const formJs = getUri(webview, extensionUri, ['out', 'webview', 'main.js']);
+  const html = await vscode.workspace.fs.readFile(
+    vscode.Uri.joinPath(extensionUri, 'out', 'webview', 'index.html')
+  );
+  return new TextDecoder('utf-8').decode(html);
 
   return `
   <!DOCTYPE html>
@@ -111,6 +120,7 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
       </style>
     </head>
     <body>
+    <div id="root"></div>
       <form id="connection-form" style="display: grid; grid-row-gap: 15px;">
         <vscode-text-field name="displayName"><span style="color: var(--vscode-editor-foreground);">Display Name</span></vscode-text-field>
         <div style="display: flex; flex-direction: column;">
@@ -159,7 +169,8 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
           <vscode-button id="create-btn">Create</vscode-button>
         </div>
       </form>
-      <script type="module" src="${formJs}"></script>
+      <script>var exports = {};</script>
+      <script src="${formJs}"></script>
     </body>
   </html>
 `;

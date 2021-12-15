@@ -48,6 +48,7 @@ export const connectToDatabase =
     } else {
       selectedName = item.config.name;
     }
+
     const match = context.globalState
       .get<ConnData[]>(storageKey, [])
       .find(({ name }) => name === selectedName) as any; // TODO: fix any
