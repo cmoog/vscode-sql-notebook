@@ -22,9 +22,6 @@
     "onView:sqlnotebook-connections"
   ],
   "main": "./out/extension/extension.js",
-  "targets": {
-    "main": false
-  },
   "capabilities": {
     "virtualWorkspaces": true,
     "untrustedWorkspaces": {

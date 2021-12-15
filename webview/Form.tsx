@@ -25,10 +25,7 @@ const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
     <form ref={formRef} style={{ display: 'grid', gridRowGap: '15px' }}>
       <TextOption label="Display Name" objectKey="displayName" />
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <label
-          htmlFor="driver-dropdown"
-          style={{ display: 'block', marginBottom: '3px' }}
-        >
+        <label style={{ display: 'block', marginBottom: '3px' }}>
           Database Driver
         </label>
         <vscode-dropdown name="driver" ref={dropdownRef}>
