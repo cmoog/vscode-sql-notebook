@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "module": "commonjs",
+    "target": "es5",
+    "lib": ["ES2019", "dom"],
+    "rootDir": ".",
+    "outDir": "../out/webview",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "strict": true
+  },
+  "references": []
+}

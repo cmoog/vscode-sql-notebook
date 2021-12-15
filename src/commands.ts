@@ -4,7 +4,7 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
-import { getDriver } from './driver';
+import { getPool, PoolConfig } from './driver';
 import { storageKey, globalConnPool } from './extension';
 
 export const deleteConnectionConfiguration =
@@ -48,6 +48,7 @@ export const connectToDatabase =
     } else {
       selectedName = item.config.name;
     }
+
     const match = context.globalState
       .get<ConnData[]>(storageKey, [])
       .find(({ name }) => name === selectedName);
@@ -64,14 +65,7 @@ export const connectToDatabase =
       );
       return;
     }
-    const driver = getDriver(match.driver);
-    globalConnPool.pool = await driver.createPool({
-      host: match.host,
-      port: match.port,
-      user: match.user,
-      password,
-      database: match.database,
-    });
+    globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
     try {
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
@@ -87,4 +81,4 @@ export const connectToDatabase =
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
     }
-  };
+  };;

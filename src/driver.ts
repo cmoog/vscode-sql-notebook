@@ -2,7 +2,7 @@ import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
 
-export const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
+const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
 
 export type DriverKey = typeof supportedDrivers[number];
 
@@ -17,13 +17,16 @@ export type Row = { [key: string]: string | number | null };
 
 export type ResultTable = Row[];
 
-export interface Conn {
+interface Conn {
   release: () => void;
   query: (q: string) => Promise<QueryResult>;
   destroy: () => void;
 }
 
-interface PoolConfig {
+export type PoolConfig = MySQLConfig | MSSQLConfig | PostgresConfig;
+
+interface BaseConfig {
+  driver: DriverKey;
   host: string;
   port: number;
   user: string;
@@ -31,37 +34,31 @@ interface PoolConfig {
   database?: string;
 }
 
-export interface Driver {
-  createPool: (config: PoolConfig) => Promise<Pool>;
+interface MySQLConfig extends BaseConfig {
+  driver: 'mysql';
 }
 
-export const getDriver = (driverKey: DriverKey): Driver => {
-  switch (driverKey) {
+export async function getPool(c: PoolConfig): Promise<Pool> {
+  switch (c.driver) {
     case 'mysql':
-      return mysqlDriver();
-    case 'postgres':
-      return postgresDriver();
+      return createMySQLPool(c);
     case 'mssql':
-      return mssqlDriver();
+      return createMSSQLPool(c);
+    case 'postgres':
+      return createPostgresPool(c);
     default:
-      throw new Error(`invalid driver key: ${driverKey}`);
+      throw Error('invalid driver key');
   }
-};
+}
 
-function mysqlDriver(): Driver {
-  return {
-    async createPool({
-      host,
-      port,
-      user,
-      password,
-      database,
-    }: PoolConfig): Promise<Pool> {
-      return mysqlPool(
-        mysql.createPool({ host, port, user, password, database,  })
-      );
-    },
-  };
+async function createMySQLPool({
+  host,
+  port,
+  user,
+  password,
+  database,
+}: MySQLConfig): Promise<Pool> {
+  return mysqlPool(mysql.createPool({ host, port, user, password, database }));
 }
 
 function mysqlPool(pool: mysql.Pool): Pool {
@@ -93,25 +90,25 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
   };
 }
 
-function postgresDriver(): Driver {
-  return {
-    async createPool({
-      host,
-      port,
-      user,
-      password,
-      database,
-    }: PoolConfig): Promise<Pool> {
-      const pool = new pg.Pool({
-        host,
-        port,
-        password,
-        database,
-        user,
-      });
-      return postgresPool(pool);
-    },
-  };
+interface PostgresConfig extends BaseConfig {
+  driver: 'postgres';
+}
+
+async function createPostgresPool({
+  host,
+  port,
+  user,
+  password,
+  database,
+}: PostgresConfig): Promise<Pool> {
+  const pool = new pg.Pool({
+    host,
+    port,
+    password,
+    database,
+    user,
+  });
+  return postgresPool(pool);
 }
 
 function postgresPool(pool: pg.Pool): Pool {
@@ -142,23 +139,23 @@ function postgresConn(conn: pg.PoolClient): Conn {
   };
 }
 
-function mssqlDriver(): Driver {
-  return {
-    async createPool(config: PoolConfig): Promise<Pool> {
-      const conn = await mssql.connect({
-        server: config.host,
-        port: config.port,
-        user: config.user,
-        password: config.password,
-        database: config.database,
-        options: {
-          encrypt: false,
-          trustServerCertificate: true,
-        },
-      });
-      return mssqlPool(conn);
+interface MSSQLConfig extends BaseConfig {
+  driver: 'mssql';
+  encrypt: boolean;
+}
+
+async function createMSSQLPool(config: MSSQLConfig): Promise<Pool> {
+  const conn = await mssql.connect({
+    server: config.host,
+    port: config.port,
+    user: config.user,
+    password: config.password,
+    database: config.database,
+    options: {
+      encrypt: config.encrypt,
     },
-  };
+  });
+  return mssqlPool(conn);
 }
 
 function mssqlPool(pool: mssql.ConnectionPool): Pool {

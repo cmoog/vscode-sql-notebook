@@ -20,42 +20,42 @@ class SQLConfigurationViewProvider implements vscode.WebviewViewProvider {
     this.context = context;
   }
 
-  resolveWebviewView(
+  async resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext<unknown>,
     _token: vscode.CancellationToken
-  ): void | Thenable<void> {
+  ): Promise<void> {
     webviewView.webview.options = {
       enableScripts: true,
       enableForms: true,
       localResourceRoots: [this.context.extensionUri],
     };
 
-    webviewView.webview.html = getWebviewContent(
+    webviewView.webview.html = await getWebviewContent(
       webviewView.webview,
       this.context.extensionUri
     );
     webviewView.webview.onDidReceiveMessage(async (message) => {
       switch (message.type) {
         case 'create_connection':
-          const { displayName, database, driver, host, password, port, user } =
-            message.data;
+          const { displayName, password, port, ...rest } = message.data;
 
           const passwordKey = `sqlnotebook.${displayName}`;
 
-          const newConfig: ConnData = {
+          const newConfig = {
+            ...rest,
             name: displayName,
-            database,
-            driver,
-            host,
             passwordKey,
             port: parseInt(port),
-            user,
           };
+
           if (!isValid(newConfig)) {
             return;
           }
           await this.context.secrets.store(passwordKey, password || '');
+
+          // this ensures we don't store the password in plain text
+          delete newConfig.password;
 
           const existing = this.context.globalState
             .get<ConnData[]>(storageKey, [])
@@ -89,7 +89,10 @@ function isValid(config: ConnData): boolean {
   return true;
 }
 
-function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
+async function getWebviewContent(
+  webview: vscode.Webview,
+  extensionUri: vscode.Uri
+) {
   const toolkitUri = getUri(webview, extensionUri, [
     'node_modules',
     '@vscode',
@@ -97,7 +100,11 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
     'dist',
     'toolkit.js',
   ]);
-  const formJs = getUri(webview, extensionUri, ['media', 'webview', 'form.js']);
+  const bundlePath = getUri(webview, extensionUri, [
+    'out',
+    'webview',
+    'main-bundle.js',
+  ]);
 
   return `
   <!DOCTYPE html>
@@ -107,33 +114,10 @@ function getWebviewContent(webview: vscode.Webview, extensionUri: vscode.Uri) {
       <meta name="viewport" content="width=device-width,initial-scale=1.0">
       <script type="module" src="${toolkitUri}"></script>
       <title>SQL Notebook New Connection</title>
-      <style>
-      </style>
     </head>
     <body>
-      <form id="connection-form" style="display: grid; grid-row-gap: 15px;">
-        <vscode-text-field name="displayName"><span style="color: var(--vscode-editor-foreground);">Display Name</span></vscode-text-field>
-        <div style="display: flex; flex-direction: column;">
-          <label for="driver-dropdown" style="display:block; margin-bottom: 3px;">Database Driver</label>
-          <vscode-dropdown name="driver" id="driver-dropdown">
-            <vscode-option>mysql</vscode-option>
-            <vscode-option>postgres</vscode-option>
-            <vscode-option>mssql</vscode-option>
-          </vscode-dropdown>
-        </div>
-
-        <vscode-text-field name="host"><span style="color: var(--vscode-editor-foreground);">Database Host</span></vscode-text-field>
-        <vscode-text-field name="port"><span style="color: var(--vscode-editor-foreground);">Database Port</span></vscode-text-field>
-        <vscode-text-field name="user"><span style="color: var(--vscode-editor-foreground);">Database User</span></vscode-text-field>
-        <vscode-text-field name="password" type="password"><span style="color: var(--vscode-editor-foreground);">Database Password</span></vscode-text-field>
-        <vscode-text-field name="database"><span style="color: var(--vscode-editor-foreground);">Database Name</span></vscode-text-field>
-
-        <div style="display: flex; justify-content: space-between;">
-          <vscode-button appearance="secondary" id="cancel-btn">Clear</vscode-button>
-          <vscode-button id="create-btn">Create</vscode-button>
-        </div>
-      </form>
-      <script type="module" src="${formJs}"></script>
+    <div id="root"></div>
+    <script src="${bundlePath}"></script>
     </body>
   </html>
 `;
