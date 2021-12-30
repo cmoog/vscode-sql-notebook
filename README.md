@@ -8,7 +8,7 @@
 Open SQL files in the VS Code Notebook interface. Execute query blocks
 and view output interactively.
 
-<img width="1277" alt="Screen Shot 2021-08-15 at 11 40 57 AM" src="https://user-images.githubusercontent.com/7585078/129485783-a7451bb2-0ab4-408b-adb2-9c28179b2b45.png">
+![Screen Shot 2021-12-30 at 1 34 19 PM](https://user-images.githubusercontent.com/7585078/147782832-1d281462-9567-4a58-a022-815e36941547.png)
 
 ## Features
 
@@ -20,8 +20,10 @@ and view output interactively.
 
 ## Usage
 
-Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format.
+Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format. Configure database connections in the SQL Notebook sidepanel.
 
-<img width="858" alt="Screen Shot 2021-08-15 at 11 40 27 AM" src="https://user-images.githubusercontent.com/7585078/129485794-cebb2e55-544a-451c-8573-a1bb0e7d9996.png">
+![Screen Shot 2021-12-30 at 1 30 29 PM](https://user-images.githubusercontent.com/7585078/147782921-78dca657-6737-4055-af46-c019e9df4ea3.png)
 
-<img width="897" alt="Screen Shot 2021-08-15 at 11 40 38 AM" src="https://user-images.githubusercontent.com/7585078/129485799-90adcb51-5f2c-4d23-a2cc-baf731affa39.png">
+![Screen Shot 2021-12-30 at 1 30 39 PM](https://user-images.githubusercontent.com/7585078/147782929-f9b7846b-6911-45ed-8354-ff0130a912b1.png)
+
+![Screen Shot 2021-12-30 at 1 34 32 PM](https://user-images.githubusercontent.com/7585078/147782853-c0ea8ecb-e5f7-410f-83c2-af3d0562302e.png)
