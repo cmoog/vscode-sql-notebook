@@ -172,11 +172,7 @@ class SQLNotebookController {
       writeSuccess(execution, result);
       return;
     }
-    writeSuccess(
-      execution,
-      resultToMarkdownTable(result),
-      'text/markdown'
-    );
+    writeSuccess(execution, resultToMarkdownTable(result), 'text/markdown');
   }
 }
 

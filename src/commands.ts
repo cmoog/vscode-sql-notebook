@@ -81,4 +81,4 @@ export const connectToDatabase =
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
     }
-  };;
+  };

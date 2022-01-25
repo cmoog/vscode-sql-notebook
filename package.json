@@ -121,7 +121,7 @@
     "compile": "tsc -b ./src & webpack --config ./webview/webpack.config.js",
     "lint": "eslint src --ext ts",
     "watch": "tsc -b ./src --watch & webpack --watch --config ./webview/webpack.config.js",
-    "fmt": "npx prettier --write ./*.{jsx,ts,tsx,json,yaml,yml,md}"
+    "fmt": "npx prettier --write --ignore-path .gitignore ."
   },
   "devDependencies": {
     "@types/escape-html": "^1.0.1",

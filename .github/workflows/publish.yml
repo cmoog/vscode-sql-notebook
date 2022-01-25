@@ -1,6 +1,6 @@
 on:
   push:
-    tags: "v*"
+    tags: 'v*'
 name: Publish Extension
 
 permissions:
@@ -23,7 +23,7 @@ jobs:
       - name: Parse version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Install dependencies
-        run: yarn
+        run: npm ci
       - name: Install vsce
         run: npm install -g vsce@1.100.0
       - name: Package extension
