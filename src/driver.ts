@@ -149,6 +149,12 @@ function postgresConn(conn: pg.PoolClient): Conn {
       if (!!maybeResponses.length) {
         return maybeResponses.map((r) => r.rows);
       }
+      if (!response.rows.length) {
+        if (response.rowCount) {
+          return `Successfully executed query, ${response.rowCount} rows affected`;
+        }
+        return `Successfully executed query`;
+      }
 
       return [response.rows];
     },

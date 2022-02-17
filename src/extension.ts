@@ -164,12 +164,16 @@ class SQLNotebookController {
       return;
     }
 
-    if (!result.length) {
-      writeSuccess(execution, 'Successfully executed query');
-      return;
-    }
     if (typeof result === 'string') {
       writeSuccess(execution, result);
+      return;
+    }
+
+    if (
+      result.length === 0 ||
+      (result.length === 1 && result[0].length === 0)
+    ) {
+      writeSuccess(execution, 'Successfully executed query');
       return;
     }
     const tables = result.map((r) => resultToMarkdownTable(r));
@@ -178,6 +182,8 @@ class SQLNotebookController {
 }
 
 function resultToMarkdownTable(result: ResultTable): string {
+  if (result.length < 1) return '';
+
   if (result.length > 20) {
     result = result.slice(0, 20);
     result.push(
