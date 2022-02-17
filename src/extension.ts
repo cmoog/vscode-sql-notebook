@@ -172,8 +172,8 @@ class SQLNotebookController {
       writeSuccess(execution, result);
       return;
     }
-    const md = result.map(r => resultToMarkdownTable(r)).join('\n\n');
-    writeSuccess(execution, md, 'text/markdown');
+    const tables = result.map(r => resultToMarkdownTable(r));
+    writeSuccess(execution, tables, 'text/markdown');
   }
 }
 
@@ -221,14 +221,15 @@ const writeErr = (execution: vscode.NotebookCellExecution, err: string) => {
 
 const writeSuccess = (
   execution: vscode.NotebookCellExecution,
-  text: string,
+  text: string | string[],
   mimeType?: string
 ) => {
-  execution.replaceOutput([
-    new vscode.NotebookCellOutput([
-      vscode.NotebookCellOutputItem.text(text, mimeType),
-    ]),
-  ]);
+  const items = typeof text === 'string' ? [text] : text;
+  execution.replaceOutput(
+    items.map(item => new vscode.NotebookCellOutput([
+      vscode.NotebookCellOutputItem.text(item, mimeType),
+    ])),
+  );
   execution.end(true, Date.now());
 };
 
