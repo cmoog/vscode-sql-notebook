@@ -61,10 +61,10 @@ export const connectToDatabase =
     const password = await context.secrets.get(match.passwordKey);
     if (password === undefined) {
       // can also mean that the platform doesn't work with `keytar`, see #18
-      vscode.window.showErrorMessage(
+      vscode.window.showWarningMessage(
         `Connection password not found in secret store. There may be a problem with the system keychain.`
       );
-      return;
+      // continue so that Linux users without a keychain can use empty password configurations
     }
 
     globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
