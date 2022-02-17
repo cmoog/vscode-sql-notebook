@@ -36,6 +36,7 @@ interface BaseConfig {
 
 interface MySQLConfig extends BaseConfig {
   driver: 'mysql';
+  multipleStatements: boolean;
 }
 
 export async function getPool(c: PoolConfig): Promise<Pool> {
@@ -57,14 +58,15 @@ async function createMySQLPool({
   user,
   password,
   database,
+  multipleStatements,
 }: MySQLConfig): Promise<Pool> {
   return mysqlPool(mysql.createPool({
-    multipleStatements: true,
     host,
     port,
     user,
     password,
     database,
+    multipleStatements,
   }));
 }
 
