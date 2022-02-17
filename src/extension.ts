@@ -172,12 +172,12 @@ class SQLNotebookController {
       writeSuccess(execution, result);
       return;
     }
-    const tables = result.map(r => resultToMarkdownTable(r));
+    const tables = result.map((r) => resultToMarkdownTable(r));
     writeSuccess(execution, tables, 'text/markdown');
   }
 }
 
-const resultToMarkdownTable = (result: ResultTable): string => {
+function resultToMarkdownTable(result: ResultTable): string {
   if (result.length > 20) {
     result = result.slice(0, 20);
     result.push(
@@ -187,53 +187,56 @@ const resultToMarkdownTable = (result: ResultTable): string => {
   return `${markdownHeader(result[0])}\n${result
     .map((r) => markdownRow(r))
     .join('\n')}`;
-};
+}
 
-const escapeNewline = (a: string | number | null): string | number | null => {
+function escapeNewline(a: string | number | null): string | number | null {
   if (typeof a === 'string') {
     return a.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
   }
   return a;
-};
+}
 
-const markdownRow = (row: Row): string => {
+function markdownRow(row: Row): string {
   const middle = Object.entries(row)
     .map((pair) => pair[1])
     .map(escapeNewline)
     .join(' | ');
   return `| ${middle} |`;
-};
+}
 
-const markdownHeader = (obj: Row): string => {
+function markdownHeader(obj: Row): string {
   const keys = Object.keys(obj).join(' | ');
   const divider = Object.keys(obj)
     .map(() => '--')
     .join(' | ');
   return `| ${keys} |\n| ${divider} |`;
-};
+}
 
-const writeErr = (execution: vscode.NotebookCellExecution, err: string) => {
+function writeErr(execution: vscode.NotebookCellExecution, err: string) {
   execution.replaceOutput([
     new vscode.NotebookCellOutput([vscode.NotebookCellOutputItem.text(err)]),
   ]);
   execution.end(false, Date.now());
-};
+}
 
-const writeSuccess = (
+function writeSuccess(
   execution: vscode.NotebookCellExecution,
   text: string | string[],
   mimeType?: string
-) => {
+) {
   const items = typeof text === 'string' ? [text] : text;
   execution.replaceOutput(
-    items.map(item => new vscode.NotebookCellOutput([
-      vscode.NotebookCellOutputItem.text(item, mimeType),
-    ])),
+    items.map(
+      (item) =>
+        new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text(item, mimeType),
+        ])
+    )
   );
   execution.end(true, Date.now());
-};
+}
 
-const splitSqlBlocks = (raw: string): string[] => {
+function splitSqlBlocks(raw: string): string[] {
   const blocks = [];
   for (const block of raw.split('\n\n')) {
     if (block.trim().length > 0) {
@@ -246,4 +249,4 @@ const splitSqlBlocks = (raw: string): string[] => {
     blocks[blocks.length - 1] += '\n\n';
   }
   return blocks;
-};
+}

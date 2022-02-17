@@ -60,14 +60,16 @@ async function createMySQLPool({
   database,
   multipleStatements,
 }: MySQLConfig): Promise<Pool> {
-  return mysqlPool(mysql.createPool({
-    host,
-    port,
-    user,
-    password,
-    database,
-    multipleStatements,
-  }));
+  return mysqlPool(
+    mysql.createPool({
+      host,
+      port,
+      user,
+      password,
+      database,
+      multipleStatements,
+    })
+  );
 }
 
 function mysqlPool(pool: mysql.Pool): Pool {
@@ -86,7 +88,7 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
     destroy() {
       conn.destroy();
     },
-    async query(q: string): Promise<ResultTable[]> {
+    async query(q: string): Promise<QueryResult> {
       const [result] = (await conn.query(q)) as any;
       if (!result.length) {
         return [[result] as ResultTable];
@@ -138,14 +140,14 @@ function postgresPool(pool: pg.Pool): Pool {
 
 function postgresConn(conn: pg.PoolClient): Conn {
   return {
-    async query(q: string): Promise<ResultTable[]> {
+    async query(q: string): Promise<QueryResult> {
       const response = await conn.query(q);
 
       // Typings for pg unfortunately miss that `query` may return an array of
       // results when the query strings contains multiple sql statements.
       const maybeResponses = response as any as pg.QueryResult<any>[];
       if (!!maybeResponses.length) {
-        return maybeResponses.map(r => r.rows);
+        return maybeResponses.map((r) => r.rows);
       }
 
       return [response.rows];
