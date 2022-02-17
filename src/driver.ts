@@ -58,7 +58,14 @@ async function createMySQLPool({
   password,
   database,
 }: MySQLConfig): Promise<Pool> {
-  return mysqlPool(mysql.createPool({ host, port, user, password, database }));
+  return mysqlPool(mysql.createPool({
+    multipleStatements: true,
+    host,
+    port,
+    user,
+    password,
+    database,
+  }));
 }
 
 function mysqlPool(pool: mysql.Pool): Pool {
@@ -81,6 +88,10 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
       const [result] = (await conn.query(q)) as any;
       if (!result.length) {
         return [[result] as ResultTable];
+      }
+      if (result.length > 0 && !!result[0].length) {
+        // Nested row data for multiple statements.
+        return result as ResultTable[];
       }
       return [result as ResultTable];
     },
