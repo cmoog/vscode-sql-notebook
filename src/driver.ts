@@ -11,7 +11,7 @@ export interface Pool {
   end: () => void;
 }
 
-export type QueryResult = ResultTable | string;
+export type QueryResult = ResultTable[] | string;
 
 export type Row = { [key: string]: string | number | null };
 
@@ -77,12 +77,12 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
     destroy() {
       conn.destroy();
     },
-    async query(q: string): Promise<ResultTable> {
+    async query(q: string): Promise<ResultTable[]> {
       const [result] = (await conn.query(q)) as any;
       if (!result.length) {
-        return [result] as ResultTable;
+        return [[result] as ResultTable];
       }
-      return result as ResultTable;
+      return [result as ResultTable];
     },
     release() {
       conn.release();
@@ -125,9 +125,17 @@ function postgresPool(pool: pg.Pool): Pool {
 
 function postgresConn(conn: pg.PoolClient): Conn {
   return {
-    async query(q: string): Promise<ResultTable> {
+    async query(q: string): Promise<ResultTable[]> {
       const response = await conn.query(q);
-      return response.rows;
+
+      // Typings for pg unfortunately miss that `query` may return an array of
+      // results when the query strings contains multiple sql statements.
+      const maybeResponses = response as any as pg.QueryResult<any>[];
+      if (!!maybeResponses.length) {
+        return maybeResponses.map(r => r.rows);
+      }
+
+      return [response.rows];
     },
     destroy() {
       // TODO: verify
@@ -180,7 +188,7 @@ function mssqlConn(req: mssql.Request): Conn {
       if (res.recordsets.length < 1) {
         return `Rows affected: ${res.rowsAffected}`;
       }
-      return res.recordsets[0];
+      return [res.recordsets[0]];
     },
     release() {
       // TODO: verify correctness

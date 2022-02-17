@@ -172,7 +172,8 @@ class SQLNotebookController {
       writeSuccess(execution, result);
       return;
     }
-    writeSuccess(execution, resultToMarkdownTable(result), 'text/markdown');
+    const md = result.map(r => resultToMarkdownTable(r)).join('\n\n');
+    writeSuccess(execution, md, 'text/markdown');
   }
 }
 
