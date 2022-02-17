@@ -59,12 +59,6 @@ export const connectToDatabase =
       return;
     }
     const password = await context.secrets.get(match.passwordKey);
-    if (password === undefined) {
-      vscode.window.showErrorMessage(
-        `Connection password not found in secret store.`
-      );
-      return;
-    }
     globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
     try {
       const conn = await globalConnPool.pool.getConnection();
