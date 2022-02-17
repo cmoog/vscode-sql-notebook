@@ -91,7 +91,7 @@ function useDropdownValue() {
 function showDriverConfig(driver: string) {
   switch (driver) {
     case 'mysql':
-      return(
+      return (
         <>
           <vscode-checkbox name="multipleStatements" checked>
             Multiple statements
