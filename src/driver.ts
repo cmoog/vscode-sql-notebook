@@ -11,20 +11,28 @@ export interface Pool {
   end: () => void;
 }
 
-export type QueryResult = ResultTable[] | string;
+// ExecutionResult can represent the output of multiple queries,
+// any of which can be `exec`, schema changes, `select`, etc.
+export type ExecutionResult = TabularResult[];
 
+// TabularResult represents a table of data capable of marshalling into human readable output.
+export type TabularResult = Row[];
+
+// Row represents an arbitrary map of data with marshallable values.
 export type Row = { [key: string]: string | number | null };
 
-export type ResultTable = Row[];
-
+// Conn is an abstraction over driver-specific connection interfaces.
 interface Conn {
   release: () => void;
-  query: (q: string) => Promise<QueryResult>;
+  query: (q: string) => Promise<ExecutionResult>;
   destroy: () => void;
 }
 
+// PoolConfig exposes general and driver-specific configuration options for opening database pools.
 export type PoolConfig = MySQLConfig | MSSQLConfig | PostgresConfig;
 
+// BaseConfig describes driver configuration options common between all implementations.
+// Driver-specific options are included in extensions that inherit this.
 interface BaseConfig {
   driver: DriverKey;
   host: string;
@@ -88,16 +96,25 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
     destroy() {
       conn.destroy();
     },
-    async query(q: string): Promise<QueryResult> {
-      const [result] = (await conn.query(q)) as any;
+    async query(q: string): Promise<ExecutionResult> {
+      const [result, ok] = (await conn.query(q)) as any;
+      console.debug('mysql query result', { result, ok });
+
       if (!result.length) {
-        return [[result] as ResultTable];
+        // this is a singleton exec query result
+        return [result];
       }
-      if (result.length > 0 && !!result[0].length) {
-        // Nested row data for multiple statements.
-        return result as ResultTable[];
+
+      // this reliably indicates whether there are results for multiple distinct queries
+      const hasMultipleResults = ok.length > 1;
+      if (hasMultipleResults) {
+        // when we have `ResultSetHeader`, which is the result of an exec request,
+        // we want to nest that into an array so that is display as a single row table
+        return result.map((res: any) =>
+          res.length !== undefined ? res : [res]
+        );
       }
-      return [result as ResultTable];
+      return [result];
     },
     release() {
       conn.release();
@@ -140,23 +157,22 @@ function postgresPool(pool: pg.Pool): Pool {
 
 function postgresConn(conn: pg.PoolClient): Conn {
   return {
-    async query(q: string): Promise<QueryResult> {
-      const response = await conn.query(q);
+    async query(q: string): Promise<ExecutionResult> {
+      const response = (await conn.query(q)) as any as pg.QueryResult<any>[];
+      console.debug('pg query response', { response });
 
       // Typings for pg unfortunately miss that `query` may return an array of
       // results when the query strings contains multiple sql statements.
-      const maybeResponses = response as any as pg.QueryResult<any>[];
-      if (!!maybeResponses.length) {
-        return maybeResponses.map((r) => r.rows);
-      }
-      if (!response.rows.length) {
-        if (response.rowCount) {
-          return `Successfully executed query, ${response.rowCount} rows affected`;
-        }
-        return `Successfully executed query`;
-      }
+      const maybeResponses = !!response.length
+        ? response
+        : ([response] as any as pg.QueryResult<any>[]);
 
-      return [response.rows];
+      return maybeResponses.map(({ rows, rowCount }) => {
+        if (!rows.length) {
+          return rowCount !== null ? [{ rowCount: rowCount }] : [];
+        }
+        return rows;
+      });
     },
     destroy() {
       // TODO: verify
@@ -204,10 +220,11 @@ function mssqlConn(req: mssql.Request): Conn {
     destroy() {
       req.cancel();
     },
-    async query(q: string): Promise<QueryResult> {
+    async query(q: string): Promise<ExecutionResult> {
+      // TODO: support multiple queries
       const res = await req.query(q);
       if (res.recordsets.length < 1) {
-        return `Rows affected: ${res.rowsAffected}`;
+        return [[{ rows_affected: `${res.rowsAffected}` }]];
       }
       return [res.recordsets[0]];
     },

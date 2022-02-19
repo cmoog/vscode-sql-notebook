@@ -2,7 +2,7 @@ import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { SQLNotebookConnections } from './connections';
 import { connectToDatabase, deleteConnectionConfiguration } from './commands';
-import { Pool, QueryResult, ResultTable, Row } from './driver';
+import { Pool, ExecutionResult, TabularResult, Row } from './driver';
 import { activateFormProvider } from './form';
 
 const notebookType = 'sql-notebook';
@@ -151,7 +151,7 @@ class SQLNotebookController {
     });
 
     console.debug('executing query', { query: rawQuery });
-    let result: QueryResult;
+    let result: ExecutionResult;
     try {
       result = await conn.query(rawQuery);
       console.debug('sql query completed', result);
@@ -181,8 +181,10 @@ class SQLNotebookController {
   }
 }
 
-function resultToMarkdownTable(result: ResultTable): string {
-  if (result.length < 1) return '';
+function resultToMarkdownTable(result: TabularResult): string {
+  if (result.length < 1) {
+    return '*Empty Results Table*';
+  }
 
   if (result.length > 20) {
     result = result.slice(0, 20);
