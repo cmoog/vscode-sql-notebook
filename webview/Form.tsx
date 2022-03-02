@@ -106,6 +106,9 @@ function showDriverConfig(driver: string) {
           <vscode-checkbox name="encrypt" checked>
             Encrypt
           </vscode-checkbox>
+          <vscode-checkbox name="trustServerCertificate" checked>
+            Trust Server Certificate
+          </vscode-checkbox>
         </>
       );
   }

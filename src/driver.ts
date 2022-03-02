@@ -187,6 +187,7 @@ function postgresConn(conn: pg.PoolClient): Conn {
 interface MSSQLConfig extends BaseConfig {
   driver: 'mssql';
   encrypt: boolean;
+  trustServerCertificate: boolean;
 }
 
 async function createMSSQLPool(config: MSSQLConfig): Promise<Pool> {
@@ -198,6 +199,7 @@ async function createMSSQLPool(config: MSSQLConfig): Promise<Pool> {
     database: config.database,
     options: {
       encrypt: config.encrypt,
+      trustServerCertificate: config.trustServerCertificate,
     },
   });
   return mssqlPool(conn);

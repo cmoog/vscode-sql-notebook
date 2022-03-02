@@ -31,6 +31,11 @@ function handleSubmit(form: HTMLFormElement) {
     // if "on", we want `true`, if nullish, we want false
     data.encrypt = !!data.encrypt;
   }
+  if (data.trustServerCertificate) {
+    // if "on", we want `true`, if nullish, we want false
+    data.trustServerCertificate = !!data.trustServerCertificate;
+  }
+
   createConnection(data);
 }
 
