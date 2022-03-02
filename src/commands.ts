@@ -67,8 +67,8 @@ export const connectToDatabase =
       // continue so that Linux users without a keychain can use empty password configurations
     }
 
-    globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
     try {
+      globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
@@ -78,7 +78,7 @@ export const connectToDatabase =
     } catch (err) {
       vscode.window.showErrorMessage(
         // @ts-ignore
-        `Failed to connect to "${match.name}": ${err.message}`
+        `WHOOPS "${match.name}": ${err.message}: ${JSON.stringify(match)}`
       );
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
