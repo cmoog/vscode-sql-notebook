@@ -102,7 +102,7 @@ function mysqlConn(conn: mysql.PoolConnection): Conn {
 
       if (!result.length) {
         // this is a singleton exec query result
-        return [result];
+        return [[result]];
       }
 
       // this reliably indicates whether there are results for multiple distinct queries
