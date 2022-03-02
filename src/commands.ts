@@ -78,7 +78,7 @@ export const connectToDatabase =
     } catch (err) {
       vscode.window.showErrorMessage(
         // @ts-ignore
-        `WHOOPS "${match.name}": ${err.message}: ${JSON.stringify(match)}`
+        `Failed to connect to "${match.name}": ${err.message}`
       );
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
