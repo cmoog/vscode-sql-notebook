@@ -5,7 +5,8 @@ import {
   SQLNotebookConnections,
 } from './connections';
 import { getPool, PoolConfig } from './driver';
-import { storageKey, globalConnPool } from './extension';
+import { storageKey, globalConnPool, globalLspClient } from './extension';
+import { sqlsDriverFromDriver } from './lsp';
 
 export const deleteConnectionConfiguration =
   (
@@ -72,6 +73,29 @@ export const connectToDatabase =
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
+
+      try {
+        const driver = sqlsDriverFromDriver(match.driver);
+        if (driver) {
+          globalLspClient.start({
+            host: match.host,
+            port: match.port,
+            password: password,
+            driver,
+            database: match.database,
+            user: match.user,
+          });
+        } else {
+          vscode.window.showWarningMessage(
+            `Driver ${match.driver} not supported by language server. Completion support disabled.`
+          );
+        }
+      } catch (e) {
+        vscode.window.showErrorMessage(
+          `Language server failed to initialize: ${e}`
+        );
+      }
+
       vscode.window.showInformationMessage(
         `Successfully connected to "${match.name}"`
       );
@@ -80,6 +104,7 @@ export const connectToDatabase =
         // @ts-ignore
         `Failed to connect to "${match.name}": ${err.message}`
       );
+      globalLspClient.stop();
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
     }
