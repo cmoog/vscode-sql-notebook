@@ -6,7 +6,7 @@ import {
 } from './connections';
 import { getPool, PoolConfig } from './driver';
 import { storageKey, globalConnPool, globalLspClient } from './extension';
-import { sqlsDriverFromDriver } from './lsp';
+import { getCompiledLSPBinaryPath, sqlsDriverFromDriver } from './lsp';
 
 export const deleteConnectionConfiguration =
   (
@@ -76,8 +76,12 @@ export const connectToDatabase =
 
       try {
         const driver = sqlsDriverFromDriver(match.driver);
+        const binPath = getCompiledLSPBinaryPath();
+        if (!binPath)
+          throw Error('Platform not supported, language server disabled.');
         if (driver) {
           globalLspClient.start({
+            binPath,
             host: match.host,
             port: match.port,
             password: password,
@@ -85,13 +89,13 @@ export const connectToDatabase =
             database: match.database,
             user: match.user,
           });
-        } else {
+        } else if (driver) {
           vscode.window.showWarningMessage(
             `Driver ${match.driver} not supported by language server. Completion support disabled.`
           );
         }
       } catch (e) {
-        vscode.window.showErrorMessage(
+        vscode.window.showWarningMessage(
           `Language server failed to initialize: ${e}`
         );
       }

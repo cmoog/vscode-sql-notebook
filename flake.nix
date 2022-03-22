@@ -12,7 +12,7 @@
       in
       {
         devShell = pkgs.mkShell {
-          packages = with pkgs; [ nodejs-16_x ];
+          packages = with pkgs; [ nodejs-16_x go_1_17 fish ];
         };
       }
     );

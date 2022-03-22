@@ -4,10 +4,11 @@ import {
   ServerOptions,
 } from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
-import * as child from 'child_process';
 import { DriverKey } from './driver';
+import path = require('path');
 
 export interface LspConfig {
+  binPath: string;
   host: string;
   port: number;
   user: string;
@@ -30,13 +31,22 @@ export const sqlsDriverFromDriver = (
   return null;
 };
 
-const sqlsInPath = (): boolean => {
-  try {
-    return child.spawnSync('which', ['sqls']).status === 0;
-  } catch {
-    return false;
-  }
-};
+export function getCompiledLSPBinaryPath(): string | null {
+  const { arch, platform } = process;
+  const goarch = { arm64: 'arm64', x64: 'amd64' }[arch];
+  const goos = { linux: 'linux', darwin: 'darwin', win32: 'windows' }[
+    platform.toString()
+  ];
+  if (!goarch && !goos) return null;
+  return path.join(
+    __filename,
+    '..',
+    '..',
+    '..',
+    'sqls_bin',
+    `sqls_${goarch}_${goos}`
+  );
+}
 
 export class SqlLspClient {
   private client: LanguageClient | null;
@@ -44,11 +54,8 @@ export class SqlLspClient {
     this.client = null;
   }
   start(config: LspConfig) {
-    if (!sqlsInPath()) {
-      return;
-    }
     let serverOptions: ServerOptions = {
-      command: 'sqls',
+      command: config.binPath,
       args: [],
     };
 
