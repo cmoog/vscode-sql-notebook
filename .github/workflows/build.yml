@@ -16,9 +16,12 @@ jobs:
         with:
           submodules: true
       - uses: cachix/install-nix-action@v16
-      - run: nix develop --command npm ci
-      - run: nix develop --command ./compile_sqls.fish
-      - run: nix develop --command npx vsce package --out sqlnotebook-${{ github.sha }}.vsix
+      - run: |
+        nix develop --command bash << EOF
+          npm ci
+          ./compile_sqls.fish
+          npx vsce package --out sqlnotebook-${{ github.sha }}.vsix
+        EOF
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
