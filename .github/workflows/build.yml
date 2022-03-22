@@ -13,19 +13,16 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: cachix/install-nix-action@v10
         with:
-          node-version: '16.x'
-      - uses: actions/cache@v2
+          nix_path: nixpkgs=channel:nixos-unstable
+      - uses: workflow/nix-shell-action@v1
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.lock') }}
-      - name: Install dependencies
-        run: npm ci
-      - name: Install vsce
-        run: npm install -g vsce@1.100.0
-      - name: Package extension
-        run: vsce package --out sqlnotebook-${{ github.sha }}.vsix
+          packages: hello,docker
+          script: |
+            npm ci
+            vsce package --out sqlnotebook-${{ github.sha }}.vsix
+            vsce package --out sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
