@@ -19,25 +19,23 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
       - name: Parse version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: npm ci
-      - name: Install vsce
-        run: npm install -g vsce@1.100.0
-      - name: Package extension
-        run: vsce package --out sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
+      - uses: cachix/install-nix-action@v16
+      - run: nix develop --command npm ci
+      - run: nix develop --command ./compile_sqls.fish
+        run: nix develop --command npx vsce package --out sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
           name: sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
           path: sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
       - name: Publish Extension to Microsoft Marketplace
-        run: vsce publish --packagePath ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
+        run: nix develop --command npx vsce publish --packagePath ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_CREDENTIALS }}
-      - name: Install OpenVSX CLI
-        run: npm install -g ovsx
       - name: Publish to OpenVSX
-        run: npx ovsx publish ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix -p ${{ secrets.OPEN_VSX_CREDENTIALS }}
+        run: nix develop --command npx ovsx publish ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix -p ${{ secrets.OPEN_VSX_CREDENTIALS }}
