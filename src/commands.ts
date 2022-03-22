@@ -89,7 +89,7 @@ export const connectToDatabase =
             database: match.database,
             user: match.user,
           });
-        } else if (driver) {
+        } else {
           vscode.window.showWarningMessage(
             `Driver ${match.driver} not supported by language server. Completion support disabled.`
           );
