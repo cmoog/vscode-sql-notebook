@@ -12,7 +12,9 @@ jobs:
   package:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
       - uses: cachix/install-nix-action@v16
       - run: nix develop --command npm ci
       - run: nix develop --command ./compile_sqls.fish
