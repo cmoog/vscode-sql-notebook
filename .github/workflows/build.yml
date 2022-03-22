@@ -16,13 +16,9 @@ jobs:
       - uses: cachix/install-nix-action@v10
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-      - uses: workflow/nix-shell-action@v1
-        with:
-          packages: hello,docker
-          script: |
-            npm ci
-            vsce package --out sqlnotebook-${{ github.sha }}.vsix
-            vsce package --out sqlnotebook-${{ github.sha }}.vsix
+      - run: nix develop --command npm ci
+      - run: nix develop --command vsce package --out sqlnotebook-${{ github.sha }}.vsix
+      - run: nix develop --command vsce package --out sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
