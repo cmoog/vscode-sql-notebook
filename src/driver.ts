@@ -69,6 +69,7 @@ async function createMySQLPool({
   password,
   database,
   multipleStatements,
+  queryTimeout,
 }: MySQLConfig): Promise<Pool> {
   return mysqlPool(
     mysql.createPool({
@@ -78,14 +79,15 @@ async function createMySQLPool({
       password,
       database,
       multipleStatements,
-    })
+    }),
+    queryTimeout
   );
 }
 
-function mysqlPool(pool: mysql.Pool): Pool {
+function mysqlPool(pool: mysql.Pool, queryTimeout: number): Pool {
   return {
     async getConnection(): Promise<Conn> {
-      return mysqlConn(await pool.getConnection());
+      return mysqlConn(await pool.getConnection(), queryTimeout);
     },
     end() {
       pool.end();
@@ -93,13 +95,16 @@ function mysqlPool(pool: mysql.Pool): Pool {
   };
 }
 
-function mysqlConn(conn: mysql.PoolConnection): Conn {
+function mysqlConn(conn: mysql.PoolConnection, queryTimeout: number): Conn {
   return {
     destroy() {
       conn.destroy();
     },
     async query(q: string): Promise<ExecutionResult> {
-      const [result, ok] = (await conn.query(q)) as any;
+      const [result, ok] = (await conn.query({
+        sql: q,
+        timeout: queryTimeout,
+      })) as any;
       console.debug('mysql query result', { result, ok });
 
       if (!result.length) {
