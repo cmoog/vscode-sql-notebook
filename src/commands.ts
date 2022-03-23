@@ -73,31 +73,8 @@ export const connectToDatabase =
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
-
-      try {
-        const driver = sqlsDriverFromDriver(match.driver);
-        const binPath = getCompiledLSPBinaryPath();
-        if (!binPath)
-          throw Error('Platform not supported, language server disabled.');
-        if (driver) {
-          globalLspClient.start({
-            binPath,
-            host: match.host,
-            port: match.port,
-            password: password,
-            driver,
-            database: match.database,
-            user: match.user,
-          });
-        } else {
-          vscode.window.showWarningMessage(
-            `Driver ${match.driver} not supported by language server. Completion support disabled.`
-          );
-        }
-      } catch (e) {
-        vscode.window.showWarningMessage(
-          `Language server failed to initialize: ${e}`
-        );
+      if (shouldUseLanguageServer()) {
+        startLanguageServer(match, password);
       }
 
       vscode.window.showInformationMessage(
@@ -113,3 +90,38 @@ export const connectToDatabase =
       connectionsSidepanel.setActive(null);
     }
   };
+
+function startLanguageServer(conn: ConnData, password?: string) {
+  try {
+    const driver = sqlsDriverFromDriver(conn.driver);
+    const binPath = getCompiledLSPBinaryPath();
+    if (!binPath)
+      throw Error('Platform not supported, language server disabled.');
+    if (driver) {
+      globalLspClient.start({
+        binPath,
+        host: conn.host,
+        port: conn.port,
+        password: password,
+        driver,
+        database: conn.database,
+        user: conn.user,
+      });
+    } else {
+      vscode.window.showWarningMessage(
+        `Driver ${conn.driver} not supported by language server. Completion support disabled.`
+      );
+    }
+  } catch (e) {
+    vscode.window.showWarningMessage(
+      `Language server failed to initialize: ${e}`
+    );
+  }
+}
+
+function shouldUseLanguageServer(): boolean {
+  return (
+    vscode.workspace.getConfiguration('SQLNotebook').get('useLanguageServer') ||
+    false
+  );
+}
