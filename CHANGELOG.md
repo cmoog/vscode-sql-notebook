@@ -1,5 +1,8 @@
 # Change Log
 
-## [Unreleased]
+## [Unreleased 0.5.0]
 
-- Initial release
+- Package `sqls` language server into `vscode-sql-notebook`.
+  - When running on a compatible arch/os, notebooks will now
+  benefit from enhacned typed autocomplete and hover information
+  when connected to a valid database connection.

@@ -18,6 +18,9 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop -c bash {0}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -25,11 +28,9 @@ jobs:
       - name: Parse version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - uses: cachix/install-nix-action@v16
-      - run: |
-          npm ci
-          ./compile_sqls.fish
-          npx vsce package --out sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
-        shell: nix develop -c bash {0}
+      - run: npm ci
+      - run: ./compile_sqls.fish
+      - run: npx vsce package --out sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:

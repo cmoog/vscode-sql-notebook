@@ -11,16 +11,17 @@ on:
 jobs:
   package:
     runs-on: ubuntu-20.04
+    defaults:
+      run:
+        shell: nix develop -c bash {0}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: true
       - uses: cachix/install-nix-action@v16
-      - run: |
-          npm ci
-          ./compile_sqls.fish
-          npx vsce package --out sqlnotebook-${{ github.sha }}.vsix
-        shell: nix develop -c bash {0}
+      - run: npm ci
+      - run: ./compile_sqls.fish
+      - run: npx vsce package --out sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:

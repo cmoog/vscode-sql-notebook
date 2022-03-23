@@ -1,5 +1,17 @@
 #!/usr/bin/env fish
 
+# This script compiles the ./sqls language server
+# into binaries for the most common ARCH/OS combinations.
+# Then, we use `upx` to compress the binary to save on
+# overall bundle size.
+# 
+# Eventually, these binaries are bundled into the final
+# .vsix asset and shipped with the extension. At runtime,
+# the extension will check if an available binary exists for
+# the given detected ARCH/OS combo. If yes, it will run it as
+# a language server to provide enhanced completion support. 
+
+
 set --local arch { arm64, amd64, 386 }
 set --local os { linux, darwin, windows }
 
