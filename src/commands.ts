@@ -131,9 +131,9 @@ function shouldUseLanguageServer(): boolean {
 }
 
 function getQueryTimeoutConfiguration() {
-  const defaultTimeoutSeconds = 15;
+  const defaultTimeout = 30000; // make this the same as the package.json-level configuration default
   return (
     vscode.workspace.getConfiguration('SQLNotebook').get('queryTimeout') ??
-    defaultTimeoutSeconds
+    defaultTimeout
   );
 }

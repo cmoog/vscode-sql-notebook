@@ -100,8 +100,8 @@
         },
         "SQLNotebook.queryTimeout": {
           "type": "number",
-          "default": 15,
-          "description": "Query timeout in seconds for cell query execution."
+          "default": 30000,
+          "description": "Query timeout in milliseconds for cell query execution."
         }
       }
     },
