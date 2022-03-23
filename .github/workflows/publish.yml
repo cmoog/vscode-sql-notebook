@@ -1,19 +1,7 @@
+name: Publish Extension
 on:
   push:
     tags: 'v*'
-name: Publish Extension
-
-permissions:
-  actions: none
-  checks: none
-  contents: read
-  deployments: none
-  issues: none
-  packages: none
-  pull-requests: none
-  repository-projects: none
-  security-events: none
-  statuses: none
 
 jobs:
   publish:
@@ -38,9 +26,7 @@ jobs:
           path: sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
       - name: Publish Extension to Microsoft Marketplace
         run: npx vsce publish --packagePath ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
-        shell: nix develop -c bash {0}
         env:
           VSCE_PAT: ${{ secrets.VSCE_CREDENTIALS }}
       - name: Publish to OpenVSX
         run: npx ovsx publish ./sqlnotebook-${{ env.RELEASE_VERSION }}.vsix -p ${{ secrets.OPEN_VSX_CREDENTIALS }}
-        shell: nix develop -c bash {0}
