@@ -96,7 +96,7 @@
         "SQLNotebook.useLanguageServer": {
           "type": "boolean",
           "default": false,
-          "description": "Use embeded language server for intelligent completion and hover information."
+          "description": "(Unstable) Use embeded language server for intelligent completion and hover information."
         }
       }
     },
