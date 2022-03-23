@@ -5,7 +5,8 @@ import {
   SQLNotebookConnections,
 } from './connections';
 import { getPool, PoolConfig } from './driver';
-import { storageKey, globalConnPool } from './extension';
+import { storageKey, globalConnPool, globalLspClient } from './extension';
+import { getCompiledLSPBinaryPath, sqlsDriverFromDriver } from './lsp';
 
 export const deleteConnectionConfiguration =
   (
@@ -72,6 +73,10 @@ export const connectToDatabase =
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
+      if (shouldUseLanguageServer()) {
+        startLanguageServer(match, password);
+      }
+
       vscode.window.showInformationMessage(
         `Successfully connected to "${match.name}"`
       );
@@ -80,7 +85,43 @@ export const connectToDatabase =
         // @ts-ignore
         `Failed to connect to "${match.name}": ${err.message}`
       );
+      globalLspClient.stop();
       globalConnPool.pool = null;
       connectionsSidepanel.setActive(null);
     }
   };
+
+function startLanguageServer(conn: ConnData, password?: string) {
+  try {
+    const driver = sqlsDriverFromDriver(conn.driver);
+    const binPath = getCompiledLSPBinaryPath();
+    if (!binPath)
+      throw Error('Platform not supported, language server disabled.');
+    if (driver) {
+      globalLspClient.start({
+        binPath,
+        host: conn.host,
+        port: conn.port,
+        password: password,
+        driver,
+        database: conn.database,
+        user: conn.user,
+      });
+    } else {
+      vscode.window.showWarningMessage(
+        `Driver ${conn.driver} not supported by language server. Completion support disabled.`
+      );
+    }
+  } catch (e) {
+    vscode.window.showWarningMessage(
+      `Language server failed to initialize: ${e}`
+    );
+  }
+}
+
+function shouldUseLanguageServer(): boolean {
+  return (
+    vscode.workspace.getConfiguration('SQLNotebook').get('useLanguageServer') ||
+    false
+  );
+}

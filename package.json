@@ -90,6 +90,16 @@
         }
       ]
     },
+    "configuration": {
+      "title": "SQL Notebook",
+      "properties": {
+        "SQLNotebook.useLanguageServer": {
+          "type": "boolean",
+          "default": false,
+          "description": "(Unstable) Use embeded language server for intelligent completion and hover information."
+        }
+      }
+    },
     "views": {
       "sqlnotebook": [
         {
@@ -143,10 +153,12 @@
     "fork-ts-checker-webpack-plugin": "^5.0.14",
     "glob": "^7.1.7",
     "mocha": "^9.2.0",
+    "ovsx": "^0.3.0",
     "prettier": "^2.6.0",
     "style-loader": "^1.2.1",
     "ts-loader": "^9.2.6",
     "typescript": "^4.3.2",
+    "vsce": "1.100.0",
     "vscode-notebook-error-overlay": "^1.0.1",
     "vscode-test": "^1.5.2",
     "webpack": "^5.65.0",
@@ -158,7 +170,8 @@
     "mysql2": "^2.3.0",
     "pg": "^8.7.1",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react-dom": "^17.0.2",
+    "vscode-languageclient": "^7.0.0"
   },
   "prettier": {
     "semi": true,
