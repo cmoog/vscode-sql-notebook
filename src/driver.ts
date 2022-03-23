@@ -40,6 +40,8 @@ interface BaseConfig {
   user: string;
   password?: string;
   database?: string;
+
+  queryTimeout: number;
 }
 
 interface MySQLConfig extends BaseConfig {
@@ -132,6 +134,7 @@ async function createPostgresPool({
   user,
   password,
   database,
+  queryTimeout,
 }: PostgresConfig): Promise<Pool> {
   const pool = new pg.Pool({
     host,
@@ -139,6 +142,7 @@ async function createPostgresPool({
     password,
     database,
     user,
+    query_timeout: queryTimeout,
   });
   return postgresPool(pool);
 }
@@ -197,6 +201,7 @@ async function createMSSQLPool(config: MSSQLConfig): Promise<Pool> {
     user: config.user,
     password: config.password,
     database: config.database,
+    requestTimeout: config.queryTimeout,
     options: {
       encrypt: config.encrypt,
       trustServerCertificate: config.trustServerCertificate,

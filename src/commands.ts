@@ -69,7 +69,11 @@ export const connectToDatabase =
     }
 
     try {
-      globalConnPool.pool = await getPool({ ...match, password } as PoolConfig);
+      globalConnPool.pool = await getPool({
+        ...match,
+        password,
+        queryTimeout: getQueryTimeoutConfiguration(),
+      } as PoolConfig);
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
@@ -123,5 +127,13 @@ function shouldUseLanguageServer(): boolean {
   return (
     vscode.workspace.getConfiguration('SQLNotebook').get('useLanguageServer') ||
     false
+  );
+}
+
+function getQueryTimeoutConfiguration() {
+  const defaultTimeoutSeconds = 15;
+  return (
+    vscode.workspace.getConfiguration('SQLNotebook').get('queryTimeout') ??
+    defaultTimeoutSeconds
   );
 }

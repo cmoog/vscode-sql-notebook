@@ -97,6 +97,11 @@
           "type": "boolean",
           "default": false,
           "description": "(Unstable) Use embeded language server for intelligent completion and hover information."
+        },
+        "SQLNotebook.queryTimeout": {
+          "type": "number",
+          "default": 15,
+          "description": "Query timeout in seconds for cell query execution."
         }
       }
     },
