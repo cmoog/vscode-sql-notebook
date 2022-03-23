@@ -40,6 +40,8 @@ interface BaseConfig {
   user: string;
   password?: string;
   database?: string;
+
+  queryTimeout: number;
 }
 
 interface MySQLConfig extends BaseConfig {
@@ -67,6 +69,7 @@ async function createMySQLPool({
   password,
   database,
   multipleStatements,
+  queryTimeout,
 }: MySQLConfig): Promise<Pool> {
   return mysqlPool(
     mysql.createPool({
@@ -76,14 +79,15 @@ async function createMySQLPool({
       password,
       database,
       multipleStatements,
-    })
+    }),
+    queryTimeout
   );
 }
 
-function mysqlPool(pool: mysql.Pool): Pool {
+function mysqlPool(pool: mysql.Pool, queryTimeout: number): Pool {
   return {
     async getConnection(): Promise<Conn> {
-      return mysqlConn(await pool.getConnection());
+      return mysqlConn(await pool.getConnection(), queryTimeout);
     },
     end() {
       pool.end();
@@ -91,13 +95,16 @@ function mysqlPool(pool: mysql.Pool): Pool {
   };
 }
 
-function mysqlConn(conn: mysql.PoolConnection): Conn {
+function mysqlConn(conn: mysql.PoolConnection, queryTimeout: number): Conn {
   return {
     destroy() {
       conn.destroy();
     },
     async query(q: string): Promise<ExecutionResult> {
-      const [result, ok] = (await conn.query(q)) as any;
+      const [result, ok] = (await conn.query({
+        sql: q,
+        timeout: queryTimeout,
+      })) as any;
       console.debug('mysql query result', { result, ok });
 
       if (!result.length) {
@@ -132,6 +139,7 @@ async function createPostgresPool({
   user,
   password,
   database,
+  queryTimeout,
 }: PostgresConfig): Promise<Pool> {
   const pool = new pg.Pool({
     host,
@@ -139,6 +147,7 @@ async function createPostgresPool({
     password,
     database,
     user,
+    query_timeout: queryTimeout,
   });
   return postgresPool(pool);
 }
@@ -197,6 +206,7 @@ async function createMSSQLPool(config: MSSQLConfig): Promise<Pool> {
     user: config.user,
     password: config.password,
     database: config.database,
+    requestTimeout: config.queryTimeout,
     options: {
       encrypt: config.encrypt,
       trustServerCertificate: config.trustServerCertificate,
