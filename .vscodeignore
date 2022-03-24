@@ -10,3 +10,9 @@ vsc-extension-quickstart.md
 **/*.ts
 **/*.tsbuildinfo
 sqls
+.github
+flake.nix
+flake.lock
+.envrc
+.gitmodules
+webview
