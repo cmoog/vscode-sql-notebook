@@ -1,6 +1,10 @@
 # Change Log
 
-## [0.5.0]
+## Unreleased v0.6.0
+
+- Support for OracleDB driver.
+
+## v0.5.0
 
 - Bundle `sqls` language server into `vscode-sql-notebook`.
   - When running on a compatible arch/os, notebooks can now

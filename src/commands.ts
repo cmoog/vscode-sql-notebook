@@ -8,12 +8,11 @@ import { getPool, PoolConfig } from './driver';
 import { storageKey, globalConnPool, globalLspClient } from './extension';
 import { getCompiledLSPBinaryPath, sqlsDriverFromDriver } from './lsp';
 
-export const deleteConnectionConfiguration =
-  (
-    context: vscode.ExtensionContext,
-    connectionsSidepanel: SQLNotebookConnections
-  ) =>
-  async (item: ConnectionListItem) => {
+export function deleteConnectionConfiguration(
+  context: vscode.ExtensionContext,
+  connectionsSidepanel: SQLNotebookConnections
+) {
+  return async function (item: ConnectionListItem) {
     const without = context.globalState
       .get<ConnData[]>(storageKey, [])
       .filter(({ name }) => name !== item.config.name);
@@ -26,13 +25,13 @@ export const deleteConnectionConfiguration =
     );
     connectionsSidepanel.refresh();
   };
+}
 
-export const connectToDatabase =
-  (
-    context: vscode.ExtensionContext,
-    connectionsSidepanel: SQLNotebookConnections
-  ) =>
-  async (item?: ConnectionListItem) => {
+export function connectToDatabase(
+  context: vscode.ExtensionContext,
+  connectionsSidepanel: SQLNotebookConnections
+) {
+  return async function (item?: ConnectionListItem) {
     let selectedName: string;
     if (!item) {
       const names = context.globalState
@@ -94,6 +93,7 @@ export const connectToDatabase =
       connectionsSidepanel.setActive(null);
     }
   };
+}
 
 function startLanguageServer(conn: ConnData, password?: string) {
   try {

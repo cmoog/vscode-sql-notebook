@@ -1,8 +1,9 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
+import * as oracledb from 'oracledb';
 
-const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
+const supportedDrivers = ['mysql', 'postgres', 'mssql', 'oracle'] as const;
 
 export type DriverKey = typeof supportedDrivers[number];
 
@@ -29,7 +30,11 @@ interface Conn {
 }
 
 // PoolConfig exposes general and driver-specific configuration options for opening database pools.
-export type PoolConfig = MySQLConfig | MSSQLConfig | PostgresConfig;
+export type PoolConfig =
+  | MySQLConfig
+  | MSSQLConfig
+  | PostgresConfig
+  | OracleConfig;
 
 // BaseConfig describes driver configuration options common between all implementations.
 // Driver-specific options are included in extensions that inherit this.
@@ -57,6 +62,8 @@ export async function getPool(c: PoolConfig): Promise<Pool> {
       return createMSSQLPool(c);
     case 'postgres':
       return createPostgresPool(c);
+    case 'oracle':
+      return createOraclePool(c);
     default:
       throw Error('invalid driver key');
   }
@@ -242,6 +249,43 @@ function mssqlConn(req: mssql.Request): Conn {
     },
     release() {
       // TODO: verify correctness
+    },
+  };
+}
+
+interface OracleConfig extends BaseConfig {
+  driver: 'oracle';
+}
+
+async function createOraclePool(config: OracleConfig): Promise<Pool> {
+  const pool = await oracledb.createPool({
+    connectString: `${config.host}:${config.port}/${config.database}`,
+    user: config.user,
+    password: config.password,
+  });
+  return {
+    end() {
+      pool.close();
+    },
+    async getConnection(): Promise<Conn> {
+      return oracleConn(await pool.getConnection());
+    },
+  };
+}
+
+async function oracleConn(conn: oracledb.Connection): Promise<Conn> {
+  return {
+    destroy() {
+      conn.close();
+    },
+    async query(q: string): Promise<ExecutionResult> {
+      const result = await conn.execute(q, [], {
+        outFormat: oracledb.OUT_FORMAT_OBJECT,
+      });
+      return [result] as ExecutionResult;
+    },
+    release() {
+      conn.release();
     },
   };
 }
