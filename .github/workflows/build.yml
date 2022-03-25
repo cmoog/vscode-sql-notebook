@@ -18,6 +18,7 @@ jobs:
         with:
           submodules: true
       - uses: cachix/install-nix-action@v16
+      # TODO: implement build cache
       - run: npm ci
       - run: ./compile_sqls.fish
       - run: npx vsce package --out sqlnotebook-${{ github.sha }}.vsix
