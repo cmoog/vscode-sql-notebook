@@ -32,6 +32,7 @@ const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
           <vscode-option>mysql</vscode-option>
           <vscode-option>postgres</vscode-option>
           <vscode-option>mssql</vscode-option>
+          <vscode-option>oracle</vscode-option>
         </vscode-dropdown>
       </div>
       <TextOption label="Database Host" objectKey="host" />
