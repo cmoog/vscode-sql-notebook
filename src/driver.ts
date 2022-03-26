@@ -112,8 +112,9 @@ function mysqlConn(conn: mysql.PoolConnection, queryTimeout: number): Conn {
         return [[result]];
       }
 
-      // this reliably indicates whether there are results for multiple distinct queries
-      const hasMultipleResults = ok.length > 1;
+      // this indicates whether there are results for multiple distinct queries
+      const hasMultipleResults =
+        ok.length > 1 && ok.some((a: any) => a?.length);
       if (hasMultipleResults) {
         // when we have `ResultSetHeader`, which is the result of an exec request,
         // we want to nest that into an array so that is display as a single row table
