@@ -3,10 +3,15 @@
 out/test/**
 src/**
 .gitignore
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
 **/*.tsbuildinfo
 sqls
+.github
+flake.nix
+flake.lock
+.envrc
+.gitmodules
+webview

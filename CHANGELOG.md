@@ -1,6 +1,6 @@
 # Change Log
 
-## [0.5.0]
+## v0.5.0
 
 - Bundle `sqls` language server into `vscode-sql-notebook`.
   - When running on a compatible arch/os, notebooks can now

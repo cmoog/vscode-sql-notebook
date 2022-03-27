@@ -37,7 +37,9 @@ export function getCompiledLSPBinaryPath(): string | null {
   const goos = { linux: 'linux', darwin: 'darwin', win32: 'windows' }[
     platform.toString()
   ];
-  if (!goarch && !goos) return null;
+  if (!goarch && !goos) {
+    return null;
+  }
   return path.join(
     __filename,
     '..',

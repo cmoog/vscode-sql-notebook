@@ -179,7 +179,7 @@ class SQLNotebookController {
       writeSuccess(execution, 'Successfully executed query');
       return;
     }
-    const tables = result.map((r) => resultToMarkdownTable(r));
+    const tables = result.map(resultToMarkdownTable);
     writeSuccess(execution, tables, 'text/markdown');
   }
 }
@@ -195,9 +195,7 @@ function resultToMarkdownTable(result: TabularResult): string {
       Object.fromEntries(Object.entries(result).map((pair) => [pair[0], '...']))
     );
   }
-  return `${markdownHeader(result[0])}\n${result
-    .map((r) => markdownRow(r))
-    .join('\n')}`;
+  return `${markdownHeader(result[0])}\n${result.map(markdownRow).join('\n')}`;
 }
 
 function escapeNewline(a: string | number | null): string | number | null {
