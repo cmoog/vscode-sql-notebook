@@ -189,13 +189,22 @@ function resultToMarkdownTable(result: TabularResult): string {
     return '*Empty Results Table*';
   }
 
-  if (result.length > 20) {
-    result = result.slice(0, 20);
+  const maxRows = getMaxRows();
+  if (result.length > maxRows) {
+    result = result.slice(0, maxRows);
     result.push(
       Object.fromEntries(Object.entries(result).map((pair) => [pair[0], '...']))
     );
   }
   return `${markdownHeader(result[0])}\n${result.map(markdownRow).join('\n')}`;
+}
+
+function getMaxRows(): number {
+  const fallbackMaxRows = 25;
+  const maxRows: number | undefined = vscode.workspace
+    .getConfiguration('SQLNotebook')
+    .get('maxResultRows');
+  return maxRows ?? fallbackMaxRows;
 }
 
 function escapeNewline(a: string | number | null): string | number | null {

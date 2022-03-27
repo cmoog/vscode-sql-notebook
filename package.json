@@ -102,6 +102,11 @@
           "type": "number",
           "default": 30000,
           "description": "Query timeout in milliseconds for cell query execution."
+        },
+        "SQLNotebook.maxResultRows": {
+          "type": "number",
+          "default": 25,
+          "description": "Maximum number of result rows to display before truncating result table."
         }
       }
     },

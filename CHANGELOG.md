@@ -1,5 +1,16 @@
 # Change Log
 
+## Unreleased
+
+- New configuration option for maximum number of result rows before truncating the result table.
+  Defaults to `25`.
+
+```json
+{
+  "SQLNotebook.maxResultRows": 25
+}
+```
+
 ## v0.5.0
 
 - Bundle `sqls` language server into `vscode-sql-notebook`.
