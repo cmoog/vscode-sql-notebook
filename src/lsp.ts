@@ -44,7 +44,6 @@ export function getCompiledLSPBinaryPath(): string | null {
     __filename,
     '..',
     '..',
-    '..',
     'sqls_bin',
     `sqls_${goarch}_${goos}`
   );

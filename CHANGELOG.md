@@ -2,7 +2,7 @@
 
 ## v0.5.2
 
-- When clicking `Run All`, cells now execute in series. Previously, cells executed in parallel.  
+- When clicking `Run All`, cells now execute in series. Previously, cells executed in parallel.
 
 - New configuration option for maximum number of result rows before truncating the result table.
   Defaults to `25`.

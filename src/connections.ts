@@ -110,4 +110,4 @@ export class ConnectionListItem extends vscode.TreeItem {
   }
 }
 
-export const mediaDir = path.join(__filename, '..', '..', '..', 'media');
+export const mediaDir = path.join(__filename, '..', '..', 'media');

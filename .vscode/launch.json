@@ -10,10 +10,8 @@
       "type": "pwa-extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "debugWebviews": {
-        "urlFilter": "*notebookRenderer*"
-      },
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "debugWebviews": true,
       "trace": true,
       "preLaunchTask": "npm: watch"
     },
@@ -22,7 +20,7 @@
       "type": "extensionHost",
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "debugWebviews": true,
       "preLaunchTask": "npm: watch"
     }

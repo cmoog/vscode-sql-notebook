@@ -5,7 +5,7 @@
     "target": "es5",
     "lib": ["ES2019", "dom"],
     "rootDir": ".",
-    "outDir": "../out/webview",
+    "outDir": "../dist/webview",
     "moduleResolution": "node",
     "sourceMap": true,
     "strict": true

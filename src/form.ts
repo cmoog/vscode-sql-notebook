@@ -101,7 +101,7 @@ async function getWebviewContent(
     'toolkit.js',
   ]);
   const bundlePath = getUri(webview, extensionUri, [
-    'out',
+    'dist',
     'webview',
     'main-bundle.js',
   ]);

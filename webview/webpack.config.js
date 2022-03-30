@@ -8,7 +8,7 @@ module.exports = {
     main: path.resolve(__dirname, './main.tsx'),
   },
   output: {
-    path: path.resolve(__dirname, '../out/webview'),
+    path: path.resolve(__dirname, '../dist/webview'),
     filename: '[name]-bundle.js',
   },
   resolve: {

@@ -21,7 +21,7 @@
     "onNotebook:sql-notebook",
     "onView:sqlnotebook-connections"
   ],
-  "main": "./out/extension/main.js",
+  "main": "./dist/index.js",
   "capabilities": {
     "virtualWorkspaces": true,
     "untrustedWorkspaces": {
@@ -139,10 +139,11 @@
   "scripts": {
     "build": "vsce package",
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -b ./src & webpack --config ./webview/webpack.config.js",
+    "compile": "ncc build ./src/main.ts --minify --out ./dist && webpack --config ./webview/webpack.config.js",
+    "clean": "rm -rf ./dist",
     "lint": "eslint src --ext ts",
-    "watch": "tsc -b ./src --watch & webpack --watch --config ./webview/webpack.config.js",
-    "fmt": "npx prettier --write --ignore-path .gitignore ."
+    "watch": "ncc build ./src/main.ts --minify --watch --out ./dist & webpack --watch --config ./webview/webpack.config.js",
+    "fmt": "prettier --write --ignore-path .gitignore ."
   },
   "devDependencies": {
     "@types/escape-html": "^1.0.1",
@@ -158,6 +159,7 @@
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",
+    "@vercel/ncc": "^0.33.3",
     "concurrently": "^7.0.0",
     "css-loader": "^6.6.0",
     "eslint": "^7.27.0",
@@ -169,7 +171,7 @@
     "style-loader": "^1.2.1",
     "ts-loader": "^9.2.6",
     "typescript": "^4.3.2",
-    "vsce": "1.100.0",
+    "vsce": "^2.7.0",
     "vscode-notebook-error-overlay": "^1.0.1",
     "vscode-test": "^1.5.2",
     "webpack": "^5.65.0",
