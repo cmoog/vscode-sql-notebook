@@ -1,6 +1,8 @@
 # Change Log
 
-## Unreleased
+## v0.5.2
+
+- When clicking `Run All`, cells now execute in series. Previously, cells executed in parallel.  
 
 - New configuration option for maximum number of result rows before truncating the result table.
   Defaults to `25`.
@@ -10,6 +12,10 @@
   "SQLNotebook.maxResultRows": 25
 }
 ```
+
+## v0.5.1
+
+- Fix for `mysql` driver result tables that caused each row to render with its own header.
 
 ## v0.5.0
 
