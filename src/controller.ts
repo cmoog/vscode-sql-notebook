@@ -23,13 +23,14 @@ export class SQLNotebookController {
     this._controller.executeHandler = this._execute.bind(this);
   }
 
-  private _execute(
+  private async _execute(
     cells: vscode.NotebookCell[],
     _notebook: vscode.NotebookDocument,
     _controller: vscode.NotebookController
-  ): void {
+  ): Promise<void> {
     for (let cell of cells) {
-      this.doExecution(cell);
+      // run each cell sequentially, awaiting its completion
+      await this.doExecution(cell);
     }
   }
 
