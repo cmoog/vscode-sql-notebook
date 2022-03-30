@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { storageKey } from './extension';
+import { storageKey } from './main';
 import { DriverKey } from './driver';
 
 export class SQLNotebookConnections

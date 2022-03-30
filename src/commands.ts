@@ -5,7 +5,7 @@ import {
   SQLNotebookConnections,
 } from './connections';
 import { getPool, PoolConfig } from './driver';
-import { storageKey, globalConnPool, globalLspClient } from './extension';
+import { storageKey, globalConnPool, globalLspClient } from './main';
 import { getCompiledLSPBinaryPath, sqlsDriverFromDriver } from './lsp';
 
 export function deleteConnectionConfiguration(

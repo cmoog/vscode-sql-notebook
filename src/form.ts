@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ConnData } from './connections';
-import { storageKey } from './extension';
+import { storageKey } from './main';
 
 export function activateFormProvider(context: vscode.ExtensionContext) {
   const provider = new SQLConfigurationViewProvider(

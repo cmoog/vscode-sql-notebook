@@ -1,100 +1,8 @@
-import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
-import { SQLNotebookConnections } from './connections';
-import { connectToDatabase, deleteConnectionConfiguration } from './commands';
-import { Pool, ExecutionResult, TabularResult, Row } from './driver';
-import { activateFormProvider } from './form';
-import { SqlLspClient } from './lsp';
+import { ExecutionResult, Row, TabularResult } from './driver';
+import { globalConnPool, notebookType } from './main';
 
-const notebookType = 'sql-notebook';
-export const storageKey = 'sqlnotebook-connections';
-
-export const globalConnPool: { pool: Pool | null } = {
-  pool: null,
-};
-
-export const globalLspClient = new SqlLspClient();
-
-export function activate(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.workspace.registerNotebookSerializer(
-      notebookType,
-      new SQLSerializer()
-    )
-  );
-  const connectionsSidepanel = new SQLNotebookConnections(context);
-  vscode.window.registerTreeDataProvider(
-    'sqlnotebook-connections',
-    connectionsSidepanel
-  );
-
-  activateFormProvider(context);
-
-  context.subscriptions.push(new SQLNotebookController());
-
-  vscode.commands.registerCommand(
-    'sqlnotebook.deleteConnectionConfiguration',
-    deleteConnectionConfiguration(context, connectionsSidepanel)
-  );
-
-  vscode.commands.registerCommand('sqlnotebook.refreshConnectionPanel', () => {
-    connectionsSidepanel.refresh();
-  });
-  vscode.commands.registerCommand(
-    'sqlnotebook.connect',
-    connectToDatabase(context, connectionsSidepanel)
-  );
-}
-
-export function deactivate() {}
-
-class SQLSerializer implements vscode.NotebookSerializer {
-  async deserializeNotebook(
-    context: Uint8Array,
-    _token: vscode.CancellationToken
-  ): Promise<vscode.NotebookData> {
-    const str = new TextDecoder().decode(context);
-    const blocks = splitSqlBlocks(str);
-
-    const cells = blocks.map((query) => {
-      const isMarkdown = query.startsWith('/*markdown') && query.endsWith('*/');
-      if (isMarkdown) {
-        const lines = query.split('\n');
-        const innerMarkdown =
-          lines.length > 2 ? lines.slice(1, lines.length - 1).join('\n') : '';
-        return new vscode.NotebookCellData(
-          vscode.NotebookCellKind.Markup,
-          innerMarkdown,
-          'markdown'
-        );
-      }
-
-      return new vscode.NotebookCellData(
-        vscode.NotebookCellKind.Code,
-        query,
-        'sql'
-      );
-    });
-    return new vscode.NotebookData(cells);
-  }
-
-  async serializeNotebook(
-    data: vscode.NotebookData,
-    _token: vscode.CancellationToken
-  ): Promise<Uint8Array> {
-    return new TextEncoder().encode(
-      data.cells
-        .map(({ value, kind }) =>
-          kind === vscode.NotebookCellKind.Code
-            ? value
-            : `/*markdown\n${value}\n*/`
-        )
-        .join('\n\n')
-    );
-  }
-}
-
-class SQLNotebookController {
+export class SQLNotebookController {
   readonly controllerId = 'sql-notebook-executor';
   readonly notebookType = notebookType;
   readonly label = 'SQL Notebook';
@@ -184,6 +92,30 @@ class SQLNotebookController {
   }
 }
 
+function writeErr(execution: vscode.NotebookCellExecution, err: string) {
+  execution.replaceOutput([
+    new vscode.NotebookCellOutput([vscode.NotebookCellOutputItem.text(err)]),
+  ]);
+  execution.end(false, Date.now());
+}
+
+function writeSuccess(
+  execution: vscode.NotebookCellExecution,
+  text: string | string[],
+  mimeType?: string
+) {
+  const items = typeof text === 'string' ? [text] : text;
+  execution.replaceOutput(
+    items.map(
+      (item) =>
+        new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text(item, mimeType),
+        ])
+    )
+  );
+  execution.end(true, Date.now());
+}
+
 function resultToMarkdownTable(result: TabularResult): string {
   if (result.length < 1) {
     return '*Empty Results Table*';
@@ -228,43 +160,4 @@ function markdownHeader(obj: Row): string {
     .map(() => '--')
     .join(' | ');
   return `| ${keys} |\n| ${divider} |`;
-}
-
-function writeErr(execution: vscode.NotebookCellExecution, err: string) {
-  execution.replaceOutput([
-    new vscode.NotebookCellOutput([vscode.NotebookCellOutputItem.text(err)]),
-  ]);
-  execution.end(false, Date.now());
-}
-
-function writeSuccess(
-  execution: vscode.NotebookCellExecution,
-  text: string | string[],
-  mimeType?: string
-) {
-  const items = typeof text === 'string' ? [text] : text;
-  execution.replaceOutput(
-    items.map(
-      (item) =>
-        new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(item, mimeType),
-        ])
-    )
-  );
-  execution.end(true, Date.now());
-}
-
-function splitSqlBlocks(raw: string): string[] {
-  const blocks = [];
-  for (const block of raw.split('\n\n')) {
-    if (block.trim().length > 0) {
-      blocks.push(block);
-      continue;
-    }
-    if (blocks.length < 1) {
-      continue;
-    }
-    blocks[blocks.length - 1] += '\n\n';
-  }
-  return blocks;
 }

@@ -5,7 +5,7 @@ import {
 } from 'vscode-languageclient/node';
 import * as vscode from 'vscode';
 import { DriverKey } from './driver';
-import path = require('path');
+import * as path from 'path';
 
 export interface LspConfig {
   binPath: string;

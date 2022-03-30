@@ -21,7 +21,7 @@
     "onNotebook:sql-notebook",
     "onView:sqlnotebook-connections"
   ],
-  "main": "./out/extension/extension.js",
+  "main": "./out/extension/main.js",
   "capabilities": {
     "virtualWorkspaces": true,
     "untrustedWorkspaces": {
@@ -137,6 +137,7 @@
     }
   },
   "scripts": {
+    "build": "vsce package",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b ./src & webpack --config ./webview/webpack.config.js",
     "lint": "eslint src --ext ts",
