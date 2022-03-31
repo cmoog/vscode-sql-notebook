@@ -46,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 class SQLSerializer implements vscode.NotebookSerializer {
   async deserializeNotebook(
@@ -168,7 +168,11 @@ class SQLNotebookController {
     }
 
     if (typeof result === 'string') {
-      writeSuccess(execution, result);
+      execution.replaceOutput(
+        new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text(result, "text"),
+        ])
+      );
       return;
     }
 
@@ -176,11 +180,14 @@ class SQLNotebookController {
       result.length === 0 ||
       (result.length === 1 && result[0].length === 0)
     ) {
-      writeSuccess(execution, 'Successfully executed query');
+      execution.replaceOutput(
+        new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text("Successfully executed query", "text"),
+        ])
+      );
       return;
     }
-    const tables = result.map((r) => resultToMarkdownTable(r));
-    writeSuccess(execution, tables, 'text/markdown');
+    writeSuccess(execution, result, 'application/json');
   }
 }
 
@@ -232,15 +239,15 @@ function writeErr(execution: vscode.NotebookCellExecution, err: string) {
 
 function writeSuccess(
   execution: vscode.NotebookCellExecution,
-  text: string | string[],
+  result: ExecutionResult | ExecutionResult[],
   mimeType?: string
 ) {
-  const items = typeof text === 'string' ? [text] : text;
+  const items = result.length == 0 ? [result] : result;
   execution.replaceOutput(
     items.map(
       (item) =>
         new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(item, mimeType),
+          vscode.NotebookCellOutputItem.json(item, mimeType),
         ])
     )
   );
