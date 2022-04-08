@@ -140,31 +140,21 @@ function getMaxRows(): number {
   return maxRows ?? fallbackMaxRows;
 }
 
-function escapeNewline(a: string | number | null): string | number | null {
-  if (typeof a === 'string') {
-    return a.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
-  }
-  return a;
-}
-
-// attempt to serialize all remaining "object" values as JSON
-function serializeNestedObjects(a: any): any {
+function serializeCell(a: any): any {
   try {
-    if (typeof a === 'object') {
-      return JSON.stringify(a);
-    }
-  } finally {
-    return a;
-  }
-}
-
-// serialize buffers as hex strings
-function serializeBinaryAsHex(a: any): any {
-  try {
+    // serialize buffers as hex strings
     if (Buffer.isBuffer(a)) {
       return `0x${a.toString('hex')}`;
     }
-  } finally {
+    // attempt to serialize all remaining "object" values as JSON
+    if (typeof a === 'object') {
+      return JSON.stringify(a);
+    }
+    if (typeof a === 'string') {
+      return a.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+    }
+    return a;
+  } catch {
     return a;
   }
 }
@@ -172,9 +162,7 @@ function serializeBinaryAsHex(a: any): any {
 function markdownRow(row: Row): string {
   const middle = Object.entries(row)
     .map((pair) => pair[1])
-    .map(serializeBinaryAsHex)
-    .map(serializeNestedObjects)
-    .map(escapeNewline)
+    .map(serializeCell)
     .join(' | ');
   return `| ${middle} |`;
 }
