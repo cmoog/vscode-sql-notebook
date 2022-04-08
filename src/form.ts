@@ -93,13 +93,6 @@ async function getWebviewContent(
   webview: vscode.Webview,
   extensionUri: vscode.Uri
 ) {
-  const toolkitUri = getUri(webview, extensionUri, [
-    'node_modules',
-    '@vscode',
-    'webview-ui-toolkit',
-    'dist',
-    'toolkit.js',
-  ]);
   const bundlePath = getUri(webview, extensionUri, [
     'dist',
     'webview',
@@ -112,7 +105,6 @@ async function getWebviewContent(
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width,initial-scale=1.0">
-      <script type="module" src="${toolkitUri}"></script>
       <title>SQL Notebook New Connection</title>
     </head>
     <body>

@@ -1,4 +1,11 @@
 import * as React from 'react';
+import {
+  VSCodeButton,
+  VSCodeTextField,
+  VSCodeDropdown,
+  VSCodeOption,
+  VSCodeCheckbox,
+} from '@vscode/webview-ui-toolkit/react';
 
 const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
   handleSubmit,
@@ -28,11 +35,11 @@ const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
         <label style={{ display: 'block', marginBottom: '3px' }}>
           Database Driver
         </label>
-        <vscode-dropdown name="driver" ref={dropdownRef}>
-          <vscode-option>mysql</vscode-option>
-          <vscode-option>postgres</vscode-option>
-          <vscode-option>mssql</vscode-option>
-        </vscode-dropdown>
+        <VSCodeDropdown name="driver" ref={dropdownRef}>
+          <VSCodeOption>mysql</VSCodeOption>
+          <VSCodeOption>postgres</VSCodeOption>
+          <VSCodeOption>mssql</VSCodeOption>
+        </VSCodeDropdown>
       </div>
       <TextOption label="Database Host" objectKey="host" />
       <TextOption label="Database Port" objectKey="port" />
@@ -47,7 +54,7 @@ const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
       {showDriverConfig(driver)}
 
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <vscode-button
+        <VSCodeButton
           appearance="secondary"
           onClick={() => {
             formRef.current?.reset();
@@ -55,13 +62,10 @@ const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
           }}
         >
           Clear
-        </vscode-button>
-        <vscode-button
-          type="submit"
-          onClick={() => handleSubmit(formRef.current!)}
-        >
+        </VSCodeButton>
+        <VSCodeButton onClick={() => handleSubmit(formRef.current!)}>
           Create
-        </vscode-button>
+        </VSCodeButton>
       </div>
     </form>
   );
@@ -93,9 +97,9 @@ function showDriverConfig(driver: string) {
     case 'mysql':
       return (
         <>
-          <vscode-checkbox name="multipleStatements" checked>
+          <VSCodeCheckbox name="multipleStatements" checked>
             Multiple statements
-          </vscode-checkbox>
+          </VSCodeCheckbox>
         </>
       );
     case 'postgres':
@@ -103,12 +107,12 @@ function showDriverConfig(driver: string) {
     case 'mssql':
       return (
         <>
-          <vscode-checkbox name="encrypt" checked>
+          <VSCodeCheckbox name="encrypt" checked>
             Encrypt
-          </vscode-checkbox>
-          <vscode-checkbox name="trustServerCertificate" checked>
+          </VSCodeCheckbox>
+          <VSCodeCheckbox name="trustServerCertificate" checked>
             Trust Server Certificate
-          </vscode-checkbox>
+          </VSCodeCheckbox>
         </>
       );
   }
@@ -121,8 +125,8 @@ const TextOption: React.FC<{
   type?: string;
 }> = ({ objectKey, label, type }) => {
   return (
-    <vscode-text-field name={objectKey} type={type}>
+    <VSCodeTextField name={objectKey} type={type}>
       <span style={{ color: 'var(--vscode-editor-foreground)' }}>{label}</span>
-    </vscode-text-field>
+    </VSCodeTextField>
   );
 };
