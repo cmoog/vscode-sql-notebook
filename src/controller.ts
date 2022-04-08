@@ -147,9 +147,33 @@ function escapeNewline(a: string | number | null): string | number | null {
   return a;
 }
 
+// attempt to serialize all remaining "object" values as JSON
+function serializeNestedObjects(a: any): any {
+  try {
+    if (typeof a === 'object') {
+      return JSON.stringify(a);
+    }
+  } finally {
+    return a;
+  }
+}
+
+// serialize buffers as hex strings
+function serializeBinaryAsHex(a: any): any {
+  try {
+    if (Buffer.isBuffer(a)) {
+      return `0x${a.toString('hex')}`;
+    }
+  } finally {
+    return a;
+  }
+}
+
 function markdownRow(row: Row): string {
   const middle = Object.entries(row)
     .map((pair) => pair[1])
+    .map(serializeBinaryAsHex)
+    .map(serializeNestedObjects)
     .map(escapeNewline)
     .join(' | ');
   return `| ${middle} |`;

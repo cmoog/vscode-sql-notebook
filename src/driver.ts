@@ -19,7 +19,7 @@ export type ExecutionResult = TabularResult[];
 export type TabularResult = Row[];
 
 // Row represents an arbitrary map of data with marshallable values.
-export type Row = { [key: string]: string | number | null };
+export type Row = { [key: string]: any };
 
 // Conn is an abstraction over driver-specific connection interfaces.
 interface Conn {
