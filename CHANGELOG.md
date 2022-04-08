@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.5.3
+
+- Fix rendering of binary and JSON data.
+  - Serialize binary data as hexadecimal with a `0x` prefix.
+  - Marshal JSON data to a string.
+- Inline all dependencies to reduce bundle size by ~20%.
+
 ## v0.5.2
 
 - When clicking `Run All`, cells now execute in series. Previously, cells executed in parallel.
