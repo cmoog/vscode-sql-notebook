@@ -11,7 +11,7 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        devShell = pkgs.mkShell {
+        devShells.default = pkgs.mkShell {
           packages = with pkgs; [ nodejs-16_x go_1_17 fish upx ];
         };
       }
