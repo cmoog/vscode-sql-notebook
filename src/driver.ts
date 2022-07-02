@@ -1,8 +1,10 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
+import * as sqlite3 from 'sqlite3';
+import * as sqlite from 'sqlite';
 
-const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
+const supportedDrivers = ['mysql', 'postgres', 'mssql', 'sqlite'] as const;
 
 export type DriverKey = typeof supportedDrivers[number];
 
@@ -29,7 +31,26 @@ interface Conn {
 }
 
 // PoolConfig exposes general and driver-specific configuration options for opening database pools.
-export type PoolConfig = MySQLConfig | MSSQLConfig | PostgresConfig;
+export type PoolConfig =
+  | SqliteConfig
+  | MySQLConfig
+  | MSSQLConfig
+  | PostgresConfig;
+
+export async function getPool(c: PoolConfig): Promise<Pool> {
+  switch (c.driver) {
+    case 'mysql':
+      return createMySQLPool(c);
+    case 'mssql':
+      return createMSSQLPool(c);
+    case 'postgres':
+      return createPostgresPool(c);
+    case 'sqlite':
+      return createSqLitePool(c);
+    default:
+      throw Error('invalid driver key');
+  }
+}
 
 // BaseConfig describes driver configuration options common between all implementations.
 // Driver-specific options are included in extensions that inherit this.
@@ -44,22 +65,47 @@ interface BaseConfig {
   queryTimeout: number;
 }
 
+interface SqliteConfig extends BaseConfig {
+  driver: 'sqlite';
+  // :memory: for in-mem database
+  // empty string for tmp on-disk file db
+  filename: string;
+}
+
+async function createSqLitePool({ filename }: SqliteConfig): Promise<Pool> {
+  const db = await sqlite.open({
+    filename: ':memory:', // TODO: for testing
+    driver: sqlite3.Database,
+  });
+  return sqlitePool(db);
+}
+
+function sqlitePool(pool: sqlite.Database): Pool {
+  return {
+    async getConnection(): Promise<Conn> {
+      return sqliteConn(pool);
+    },
+    end: () => {
+      pool.close();
+    },
+  };
+}
+
+function sqliteConn(conn: sqlite.Database): Conn {
+  return {
+    async query(q: string): Promise<ExecutionResult> {
+      const result = await conn.all(q);
+      console.debug('sqlite query result', { result });
+      return [result];
+    },
+    destroy: () => {},
+    release: () => {},
+  };
+}
+
 interface MySQLConfig extends BaseConfig {
   driver: 'mysql';
   multipleStatements: boolean;
-}
-
-export async function getPool(c: PoolConfig): Promise<Pool> {
-  switch (c.driver) {
-    case 'mysql':
-      return createMySQLPool(c);
-    case 'mssql':
-      return createMSSQLPool(c);
-    case 'postgres':
-      return createPostgresPool(c);
-    default:
-      throw Error('invalid driver key');
-  }
 }
 
 async function createMySQLPool({
