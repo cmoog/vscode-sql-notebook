@@ -34,6 +34,18 @@ export class SQLNotebookConnections
 
   getChildren(element?: ConnectionListItem): Thenable<vscode.TreeItem[]> {
     if (element) {
+      if (element.config.driver === 'sqlite') {
+        return Promise.resolve([
+          new vscode.TreeItem(
+            `filename: ${element.config.path}`,
+            vscode.TreeItemCollapsibleState.None
+          ),
+          new vscode.TreeItem(
+            `driver: ${element.config.driver}`,
+            vscode.TreeItemCollapsibleState.None
+          ),
+        ]);
+      }
       return Promise.resolve([
         new vscode.TreeItem(
           `host: ${element.config.host}`,
@@ -73,17 +85,23 @@ export class SQLNotebookConnections
   }
 }
 
-export type ConnData = {
-  driver: DriverKey;
-  name: string;
-  host: string;
-  port: number;
-  user: string;
-  passwordKey: string;
-  database: string;
-} & {
-  [key: string]: any;
-};
+export type ConnData =
+  | ({
+      driver: Omit<DriverKey, 'sqlite'>;
+      name: string;
+      host: string;
+      port: number;
+      user: string;
+      passwordKey: string;
+      database: string;
+    } & {
+      [key: string]: any;
+    })
+  | {
+      driver: 'sqlite';
+      name: string;
+      path: string;
+    };
 
 export class ConnectionListItem extends vscode.TreeItem {
   constructor(

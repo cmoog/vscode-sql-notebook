@@ -1,8 +1,9 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
-import * as sqlite3 from 'sqlite3';
 import * as sqlite from 'sqlite';
+import * as sqlite3 from 'sqlite3';
+import * as path from 'path';
 
 const supportedDrivers = ['mysql', 'postgres', 'mssql', 'sqlite'] as const;
 
@@ -65,17 +66,19 @@ interface BaseConfig {
   queryTimeout: number;
 }
 
-interface SqliteConfig extends BaseConfig {
+interface SqliteConfig {
   driver: 'sqlite';
   // :memory: for in-mem database
   // empty string for tmp on-disk file db
-  filename: string;
+  path: string;
 }
 
-async function createSqLitePool({ filename }: SqliteConfig): Promise<Pool> {
+async function createSqLitePool({
+  path: filepath,
+}: SqliteConfig): Promise<Pool> {
   const db = await sqlite.open({
-    filename: ':memory:', // TODO: for testing
     driver: sqlite3.Database,
+    filename: path.resolve(__dirname, filepath),
   });
   return sqlitePool(db);
 }

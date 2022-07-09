@@ -39,17 +39,23 @@ const Form: React.FC<{ handleSubmit: (form: HTMLFormElement) => void }> = ({
           <VSCodeOption>mysql</VSCodeOption>
           <VSCodeOption>postgres</VSCodeOption>
           <VSCodeOption>mssql</VSCodeOption>
+          <VSCodeOption>sqlite</VSCodeOption>
         </VSCodeDropdown>
       </div>
-      <TextOption label="Database Host" objectKey="host" />
-      <TextOption label="Database Port" objectKey="port" />
-      <TextOption label="Database User" objectKey="user" />
-      <TextOption
-        label="Database Password"
-        objectKey="password"
-        type="password"
-      />
-      <TextOption label="Database Name" objectKey="database" />
+      {/* special case for sqlite, don't need default options */}
+      {driver !== 'sqlite' && (
+        <>
+          <TextOption label="Database Host" objectKey="host" />
+          <TextOption label="Database Port" objectKey="port" />
+          <TextOption label="Database User" objectKey="user" />
+          <TextOption
+            label="Database Password"
+            objectKey="password"
+            type="password"
+          />
+          <TextOption label="Database Name" objectKey="database" />
+        </>
+      )}
 
       {showDriverConfig(driver)}
 
@@ -115,6 +121,8 @@ function showDriverConfig(driver: string) {
           </VSCodeCheckbox>
         </>
       );
+    case 'sqlite':
+      return <TextOption objectKey="path" label="Path" />;
   }
   return <></>;
 }
