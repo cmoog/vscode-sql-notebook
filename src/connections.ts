@@ -87,7 +87,7 @@ export class SQLNotebookConnections
 
 export type ConnData =
   | ({
-      driver: Omit<DriverKey, 'sqlite'>;
+      driver: Exclude<DriverKey, 'sqlite'>;
       name: string;
       host: string;
       port: number;

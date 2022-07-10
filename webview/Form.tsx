@@ -91,8 +91,7 @@ function useDropdownValue() {
   React.useEffect(() => {
     const { current } = ref;
     current?.addEventListener('change', (e) => {
-      // @ts-ignore
-      setValue(e.target?.value);
+      setValue((e.target as HTMLInputElement)?.value);
     });
   }, [ref.current]);
   return { ref, value, setValue };

@@ -4,7 +4,7 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
-import { DriverKey, getPool } from './driver';
+import { DriverKey, getPool, PoolConfig } from './driver';
 import { storageKey, globalConnPool, globalLspClient } from './main';
 import { getCompiledLSPBinaryPath, sqlsDriverFromDriver } from './lsp';
 
@@ -75,12 +75,12 @@ export function connectToDatabase(
           );
           // continue so that Linux users without a keychain can use empty password configurations
         }
-        // @ts-ignore
+
         globalConnPool.pool = await getPool({
           ...match,
           password,
           queryTimeout: getQueryTimeoutConfiguration(),
-        });
+        } as PoolConfig);
       }
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
@@ -94,8 +94,9 @@ export function connectToDatabase(
       );
     } catch (err) {
       vscode.window.showErrorMessage(
-        // @ts-ignore
-        `Failed to connect to "${match.name}": ${err.message}`
+        `Failed to connect to "${match.name}": ${
+          (err as { message: string }).message
+        }`
       );
       globalLspClient.stop();
       globalConnPool.pool = null;
@@ -112,12 +113,7 @@ function startLanguageServer(conn: ConnData, password?: string) {
     return;
   }
   try {
-    /*
-    The follow comment is an aside, but serves to document an interesting weakness of typescript
-    uncovered while writing this. That being, typescript should resolve the following types as equal,
-    but does not: `"a" | "b" == "b" | Omit<"a" | "b", "b">
-    */
-    const driver = sqlsDriverFromDriver(conn.driver as DriverKey);
+    const driver = sqlsDriverFromDriver(conn.driver);
     const binPath = getCompiledLSPBinaryPath();
     if (!binPath) {
       throw Error('Platform not supported, language server disabled.');
