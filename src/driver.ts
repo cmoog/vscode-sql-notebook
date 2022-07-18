@@ -1,8 +1,8 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
-import * as sqlite from 'sqlite';
-import * as sqlite3 from 'sqlite3';
+import initSqlJs, { Database as SqliteDatabase } from 'sql.js';
+import * as fs from 'fs/promises';
 import * as path from 'path';
 
 const supportedDrivers = ['mysql', 'postgres', 'mssql', 'sqlite'] as const;
@@ -76,17 +76,19 @@ interface SqliteConfig {
 async function createSqLitePool({
   path: filepath,
 }: SqliteConfig): Promise<Pool> {
-  const db = await sqlite.open({
-    driver: sqlite3.Database,
-    filename: path.resolve(__dirname, filepath),
-  });
+  const sqlite = await initSqlJs();
+  if (filepath === ':memory:') {
+    return sqlitePool(new sqlite.Database());
+  }
+  const buff = await fs.readFile(path.resolve(__dirname, filepath));
+  const db = new sqlite.Database(buff);
   return sqlitePool(db);
 }
 
-function sqlitePool(pool: sqlite.Database): Pool {
+function sqlitePool(pool: SqliteDatabase, dbFile?: string): Pool {
   return {
     async getConnection(): Promise<Conn> {
-      return sqliteConn(pool);
+      return sqliteConn(pool, dbFile);
     },
     end: () => {
       pool.close();
@@ -94,11 +96,21 @@ function sqlitePool(pool: sqlite.Database): Pool {
   };
 }
 
-function sqliteConn(conn: sqlite.Database): Conn {
+function sqliteConn(conn: SqliteDatabase, dbFile?: string): Conn {
   return {
     async query(q: string): Promise<ExecutionResult> {
-      const result = await conn.all(q);
-      console.debug('sqlite query result', { result });
+      const stm = conn.prepare(q);
+      const result = [stm.getAsObject()];
+      while (stm.step()) {
+        result.push(stm.getAsObject());
+      }
+      stm.free();
+      if (dbFile) {
+        const data = conn.export();
+        const buffer = Buffer.from(data);
+        await fs.writeFile(dbFile, buffer);
+      }
+
       return [result];
     },
     destroy: () => {},
