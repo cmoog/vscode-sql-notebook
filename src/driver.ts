@@ -1,9 +1,11 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
-import initSqlJs, { Database as SqliteDatabase } from 'sql.js';
+import initSqlJs from 'sql.js';
 import * as fs from 'fs/promises';
+import type { Database as SqliteDatabase } from 'sql.js';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
 const supportedDrivers = ['mysql', 'postgres', 'mssql', 'sqlite'] as const;
 
@@ -76,14 +78,27 @@ interface SqliteConfig {
 async function createSqLitePool({
   path: filepath,
 }: SqliteConfig): Promise<Pool> {
-  const sqlite = await initSqlJs();
+  const sqlite = await initSqlJs({
+    locateFile: (file) =>
+      path.join(__dirname, 'node_modules', 'sql.js', 'dist', file),
+  });
   if (filepath === ':memory:') {
     return sqlitePool(new sqlite.Database());
   }
-  const buff = await fs.readFile(path.resolve(__dirname, filepath));
+
+  const fullPath = path.resolve(workspaceRoot(), filepath);
+  const buff = await fs.readFile(fullPath);
   const db = new sqlite.Database(buff);
-  return sqlitePool(db);
+
+  return sqlitePool(db, fullPath);
 }
+
+// TODO: think through how this should work
+// what should the sqlite filepath be relative too if we have multiple workspace roots??
+const workspaceRoot = () =>
+  (vscode.workspace.workspaceFolders &&
+    vscode.workspace.workspaceFolders[0]?.uri.fsPath) ||
+  '';
 
 function sqlitePool(pool: SqliteDatabase, dbFile?: string): Pool {
   return {
