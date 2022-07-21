@@ -1,5 +1,12 @@
 # Change Log
 
+## v0.6.0
+
+- Support `sqlite` driver. Connect to on-disk SQLite files (or use :memory:).
+  - The implementation uses the JS-only sql.js library. This may cause incompatibility with large
+    database files on memory constrained devices. But, this avoids having to package native bindings
+    for every platform and keeps the door open for in-browser support.
+
 ## v0.5.3
 
 - Fix rendering of binary and JSON data.
