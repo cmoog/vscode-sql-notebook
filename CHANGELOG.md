@@ -16,9 +16,12 @@
 
   This will replace all blank newlines with `--#sql-cell`. _Only use this if you have a backup!_
 
-- Support `sqlite` driver.
-  - Use the JS-only sql.js library to support SQLite. This may cause incompatibility with large
-    database files on memory constrained devices.
+  - For more details on the reasoning behind this change, please reference [this issue](https://github.com/cmoog/vscode-sql-notebook/issues/48).
+
+- Support `sqlite` driver. Connect to on-disk SQLite files (or use :memory:).
+  - The implementation uses the JS-only sql.js library. This may cause incompatibility with large
+    database files on memory constrained devices. But, this avoids having to package native bindings
+    for every platform and keeps the door open for in-browser support.
 
 ## v0.5.3
 

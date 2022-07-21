@@ -20,7 +20,8 @@ and view output interactively.
 
 ## Usage
 
-Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format. Configure database connections in the SQL Notebook sidepanel.
+Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format. Configure database connections in the SQL Notebook sidepanel. Cells are delimited by the plaintext token `--#sql-cell` on its own line, with no leading
+or trailing spaces.
 
 ![Screen Shot 2021-12-30 at 1 30 29 PM](https://user-images.githubusercontent.com/7585078/147782921-78dca657-6737-4055-af46-c019e9df4ea3.png)
 
