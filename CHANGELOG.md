@@ -18,6 +18,8 @@
 
   - For more details on the reasoning behind this change, please reference [this issue](https://github.com/cmoog/vscode-sql-notebook/issues/48).
 
+## v0.6.0
+
 - Support `sqlite` driver. Connect to on-disk SQLite files (or use :memory:).
   - The implementation uses the JS-only sql.js library. This may cause incompatibility with large
     database files on memory constrained devices. But, this avoids having to package native bindings
