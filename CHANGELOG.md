@@ -1,5 +1,18 @@
 # Change Log
 
+## [unreleased]
+
+- BREAKING: new cell delimiter `--#sql-cell`
+
+  - Previously, cells were delimited by `\n\n`. Now, cells are delimited by `--#sql-cell`.
+  - This will cause existing `.sql` files to open inside a single cell.
+  - This new convention should make cell delimiting less mysterious to the user, and limit
+    the possibility of cell parsing conflicting with other SQL formatters.
+
+- Support `sqlite` driver.
+  - Use the JS-only sql.js library to support SQLite. This may cause incompatibility with large
+    database files on memory constrained devices.
+
 ## v0.5.3
 
 - Fix rendering of binary and JSON data.
