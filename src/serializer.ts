@@ -1,7 +1,7 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 
-const CELL_DELIMITER = '--#sql-cell\n';
+const CELL_DELIMITER = '\n--#sql-cell\n';
 
 export class SQLSerializer implements vscode.NotebookSerializer {
   async deserializeNotebook(
