@@ -1,6 +1,8 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 
+const CELL_DELIMITER = '\n--#sql-cell\n';
+
 export class SQLSerializer implements vscode.NotebookSerializer {
   async deserializeNotebook(
     context: Uint8Array,
@@ -42,14 +44,14 @@ export class SQLSerializer implements vscode.NotebookSerializer {
             ? value
             : `/*markdown\n${value}\n*/`
         )
-        .join('\n\n')
+        .join(CELL_DELIMITER)
     );
   }
 }
 
 function splitSqlBlocks(raw: string): string[] {
   const blocks = [];
-  for (const block of raw.split('\n\n')) {
+  for (const block of raw.split(CELL_DELIMITER)) {
     if (block.trim().length > 0) {
       blocks.push(block);
       continue;
@@ -57,7 +59,7 @@ function splitSqlBlocks(raw: string): string[] {
     if (blocks.length < 1) {
       continue;
     }
-    blocks[blocks.length - 1] += '\n\n';
+    blocks[blocks.length - 1] += CELL_DELIMITER;
   }
   return blocks;
 }
