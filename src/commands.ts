@@ -4,7 +4,7 @@ import {
   ConnectionListItem,
   SQLNotebookConnections,
 } from './connections';
-import { getPool, PoolConfig } from './driver';
+import { DriverKey, getPool, PoolConfig } from './driver';
 import { storageKey, globalConnPool, globalLspClient } from './main';
 import { getCompiledLSPBinaryPath, sqlsDriverFromDriver } from './lsp';
 
@@ -58,21 +58,30 @@ export function connectToDatabase(
       );
       return;
     }
-    const password = await context.secrets.get(match.passwordKey);
-    if (password === undefined) {
-      // can also mean that the platform doesn't work with `keytar`, see #18
-      vscode.window.showWarningMessage(
-        `Connection password not found in secret store. There may be a problem with the system keychain.`
-      );
-      // continue so that Linux users without a keychain can use empty password configurations
-    }
 
+    let password: string | undefined;
     try {
-      globalConnPool.pool = await getPool({
-        ...match,
-        password,
-        queryTimeout: getQueryTimeoutConfiguration(),
-      } as PoolConfig);
+      if (match.driver === 'sqlite') {
+        globalConnPool.pool = await getPool({
+          driver: 'sqlite',
+          path: match.path,
+        });
+      } else {
+        password = await context.secrets.get(match.passwordKey);
+        if (password === undefined) {
+          // can also mean that the platform doesn't work with `keytar`, see #18
+          vscode.window.showWarningMessage(
+            `Connection password not found in secret store. There may be a problem with the system keychain.`
+          );
+          // continue so that Linux users without a keychain can use empty password configurations
+        }
+
+        globalConnPool.pool = await getPool({
+          ...match,
+          password,
+          queryTimeout: getQueryTimeoutConfiguration(),
+        } as PoolConfig);
+      }
       const conn = await globalConnPool.pool.getConnection();
       await conn.query('SELECT 1'); // essentially a ping to see if the connection works
       connectionsSidepanel.setActive(match.name);
@@ -85,8 +94,9 @@ export function connectToDatabase(
       );
     } catch (err) {
       vscode.window.showErrorMessage(
-        // @ts-ignore
-        `Failed to connect to "${match.name}": ${err.message}`
+        `Failed to connect to "${match.name}": ${
+          (err as { message: string }).message
+        }`
       );
       globalLspClient.stop();
       globalConnPool.pool = null;
@@ -96,6 +106,12 @@ export function connectToDatabase(
 }
 
 function startLanguageServer(conn: ConnData, password?: string) {
+  if (conn.driver === 'sqlite') {
+    vscode.window.showWarningMessage(
+      `Driver ${conn.driver} not supported by language server. Completion support disabled.`
+    );
+    return;
+  }
   try {
     const driver = sqlsDriverFromDriver(conn.driver);
     const binPath = getCompiledLSPBinaryPath();
@@ -131,7 +147,7 @@ function shouldUseLanguageServer(): boolean {
   );
 }
 
-function getQueryTimeoutConfiguration() {
+function getQueryTimeoutConfiguration(): number {
   const defaultTimeout = 30000; // make this the same as the package.json-level configuration default
   return (
     vscode.workspace.getConfiguration('SQLNotebook').get('queryTimeout') ??

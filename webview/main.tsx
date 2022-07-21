@@ -2,7 +2,6 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import Form from './Form';
 
-// @ts-ignore
 const vscode = acquireVsCodeApi();
 
 function createConnection(config: any) {

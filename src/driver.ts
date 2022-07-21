@@ -1,8 +1,13 @@
 import * as mysql from 'mysql2/promise';
 import * as pg from 'pg';
 import * as mssql from 'mssql';
+import initSqlJs from 'sql.js';
+import * as fs from 'fs/promises';
+import type { Database as SqliteDatabase } from 'sql.js';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
-const supportedDrivers = ['mysql', 'postgres', 'mssql'] as const;
+const supportedDrivers = ['mysql', 'postgres', 'mssql', 'sqlite'] as const;
 
 export type DriverKey = typeof supportedDrivers[number];
 
@@ -29,7 +34,26 @@ interface Conn {
 }
 
 // PoolConfig exposes general and driver-specific configuration options for opening database pools.
-export type PoolConfig = MySQLConfig | MSSQLConfig | PostgresConfig;
+export type PoolConfig =
+  | SqliteConfig
+  | MySQLConfig
+  | MSSQLConfig
+  | PostgresConfig;
+
+export async function getPool(c: PoolConfig): Promise<Pool> {
+  switch (c.driver) {
+    case 'mysql':
+      return createMySQLPool(c);
+    case 'mssql':
+      return createMSSQLPool(c);
+    case 'postgres':
+      return createPostgresPool(c);
+    case 'sqlite':
+      return createSqLitePool(c);
+    default:
+      throw Error('invalid driver key');
+  }
+}
 
 // BaseConfig describes driver configuration options common between all implementations.
 // Driver-specific options are included in extensions that inherit this.
@@ -44,22 +68,74 @@ interface BaseConfig {
   queryTimeout: number;
 }
 
+interface SqliteConfig {
+  driver: 'sqlite';
+  // :memory: for in-mem database
+  // empty string for tmp on-disk file db
+  path: string;
+}
+
+async function createSqLitePool({
+  path: filepath,
+}: SqliteConfig): Promise<Pool> {
+  const sqlite = await initSqlJs({
+    locateFile: (file) =>
+      path.join(__dirname, 'node_modules', 'sql.js', 'dist', file),
+  });
+  if (filepath === ':memory:') {
+    return sqlitePool(new sqlite.Database());
+  }
+
+  const fullPath = path.resolve(workspaceRoot(), filepath);
+  const buff = await fs.readFile(fullPath);
+  const db = new sqlite.Database(buff);
+
+  return sqlitePool(db, fullPath);
+}
+
+// TODO: think through how this should work
+// what should the sqlite filepath be relative too if we have multiple workspace roots??
+const workspaceRoot = () =>
+  (vscode.workspace.workspaceFolders &&
+    vscode.workspace.workspaceFolders[0]?.uri.fsPath) ||
+  '';
+
+function sqlitePool(pool: SqliteDatabase, dbFile?: string): Pool {
+  return {
+    async getConnection(): Promise<Conn> {
+      return sqliteConn(pool, dbFile);
+    },
+    end: () => {
+      pool.close();
+    },
+  };
+}
+
+function sqliteConn(conn: SqliteDatabase, dbFile?: string): Conn {
+  return {
+    async query(q: string): Promise<ExecutionResult> {
+      const stm = conn.prepare(q);
+      const result = [stm.getAsObject()];
+      while (stm.step()) {
+        result.push(stm.getAsObject());
+      }
+      stm.free();
+      if (dbFile) {
+        const data = conn.export();
+        const buffer = Buffer.from(data);
+        await fs.writeFile(dbFile, buffer);
+      }
+
+      return [result];
+    },
+    destroy: () => {},
+    release: () => {},
+  };
+}
+
 interface MySQLConfig extends BaseConfig {
   driver: 'mysql';
   multipleStatements: boolean;
-}
-
-export async function getPool(c: PoolConfig): Promise<Pool> {
-  switch (c.driver) {
-    case 'mysql':
-      return createMySQLPool(c);
-    case 'mssql':
-      return createMSSQLPool(c);
-    case 'postgres':
-      return createPostgresPool(c);
-    default:
-      throw Error('invalid driver key');
-  }
 }
 
 async function createMySQLPool({

@@ -72,6 +72,15 @@ class SQLConfigurationViewProvider implements vscode.WebviewViewProvider {
 }
 
 function isValid(config: ConnData): boolean {
+  if (config.driver === 'sqlite') {
+    if (config.path) {
+      return true;
+    }
+    vscode.window.showErrorMessage(
+      `invalid "Path", must be nonempty. Use ":memory:" for an in-memory database.`
+    );
+    return false;
+  }
   if (!config.name) {
     vscode.window.showErrorMessage(`invalid "Database Name", must be nonempty`);
     return false;
