@@ -8,6 +8,13 @@
   - This will cause existing `.sql` files to open inside a single cell.
   - This new convention should make cell delimiting less mysterious to the user, and limit
     the possibility of cell parsing conflicting with other SQL formatters.
+  - To migrate old `.sql` files from the old delimiter, use the following bash command:
+
+  ```sh
+  sed -i 's/^$/--#sql-cell/g' file.sql
+  ```
+
+  This will replace all blank newlines with `--#sql-cell`. _Only use this if you have a backup!_
 
 - Support `sqlite` driver.
   - Use the JS-only sql.js library to support SQLite. This may cause incompatibility with large
