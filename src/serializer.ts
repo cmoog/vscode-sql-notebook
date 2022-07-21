@@ -1,5 +1,7 @@
-import { TextDecoder, TextEncoder } from 'util';
-import * as vscode from 'vscode';
+import { TextDecoder, TextEncoder } from "util";
+import * as vscode from "vscode";
+
+const CELL_DELIMITER = "--#sql-cell";
 
 export class SQLSerializer implements vscode.NotebookSerializer {
   async deserializeNotebook(
@@ -10,22 +12,22 @@ export class SQLSerializer implements vscode.NotebookSerializer {
     const blocks = splitSqlBlocks(str);
 
     const cells = blocks.map((query) => {
-      const isMarkdown = query.startsWith('/*markdown') && query.endsWith('*/');
+      const isMarkdown = query.startsWith("/*markdown") && query.endsWith("*/");
       if (isMarkdown) {
-        const lines = query.split('\n');
+        const lines = query.split("\n");
         const innerMarkdown =
-          lines.length > 2 ? lines.slice(1, lines.length - 1).join('\n') : '';
+          lines.length > 2 ? lines.slice(1, lines.length - 1).join("\n") : "";
         return new vscode.NotebookCellData(
           vscode.NotebookCellKind.Markup,
           innerMarkdown,
-          'markdown'
+          "markdown"
         );
       }
 
       return new vscode.NotebookCellData(
         vscode.NotebookCellKind.Code,
         query,
-        'sql'
+        "sql"
       );
     });
     return new vscode.NotebookData(cells);
@@ -42,14 +44,14 @@ export class SQLSerializer implements vscode.NotebookSerializer {
             ? value
             : `/*markdown\n${value}\n*/`
         )
-        .join('\n\n')
+        .join(CELL_DELIMITER)
     );
   }
 }
 
 function splitSqlBlocks(raw: string): string[] {
   const blocks = [];
-  for (const block of raw.split('\n\n')) {
+  for (const block of raw.split(CELL_DELIMITER)) {
     if (block.trim().length > 0) {
       blocks.push(block);
       continue;
@@ -57,7 +59,7 @@ function splitSqlBlocks(raw: string): string[] {
     if (blocks.length < 1) {
       continue;
     }
-    blocks[blocks.length - 1] += '\n\n';
+    blocks[blocks.length - 1] += CELL_DELIMITER;
   }
   return blocks;
 }
