@@ -11,8 +11,15 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        formatter = pkgs.nixpkgs-fmt;
         devShells.default = pkgs.mkShell {
-          packages = with pkgs; [ nodejs-16_x go_1_17 fish upx ];
+          packages = with pkgs; [
+            fish
+            go_1_17
+            nodejs-16_x
+            typos
+            upx
+          ];
         };
       }
     );

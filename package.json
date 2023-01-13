@@ -96,7 +96,7 @@
         "SQLNotebook.useLanguageServer": {
           "type": "boolean",
           "default": false,
-          "description": "(Unstable) Use embeded language server for intelligent completion and hover information."
+          "description": "(Unstable) Use embedded language server for intelligent completion and hover information."
         },
         "SQLNotebook.queryTimeout": {
           "type": "number",

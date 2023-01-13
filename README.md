@@ -16,7 +16,7 @@ and view output interactively.
 - Execute query blocks in the Notebook UI and view output.
 - Configure database connections in the SQL Notebook sidepanel.
 - Supports MySQL, PostgreSQL, SQLite, and MSSQL (OracleDB support coming soon).
-- (unstable) Built-in typed autocomplete with an embeded language server.
+- (unstable) Built-in typed autocomplete with an embedded language server.
 
 ## Usage
 
