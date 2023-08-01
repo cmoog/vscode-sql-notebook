@@ -1,6 +1,9 @@
 import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 
+// Cell block delimiter
+const DELIMITER = '\n\n';
+
 export class SQLSerializer implements vscode.NotebookSerializer {
   async deserializeNotebook(
     context: Uint8Array,
@@ -42,14 +45,14 @@ export class SQLSerializer implements vscode.NotebookSerializer {
             ? value
             : `/*markdown\n${value}\n*/`
         )
-        .join('\n\n')
+        .join(DELIMITER)
     );
   }
 }
 
 function splitSqlBlocks(raw: string): string[] {
   const blocks = [];
-  for (const block of raw.split('\n\n')) {
+  for (const block of raw.split(DELIMITER)) {
     if (block.trim().length > 0) {
       blocks.push(block);
       continue;

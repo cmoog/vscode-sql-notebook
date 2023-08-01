@@ -5,20 +5,16 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: nix develop -c bash {0}
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: cachix/install-nix-action@v16
+      - uses: DeterminateSystems/nix-installer-action@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
       - name: Parse version
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - run: npm ci
-      - run: ./compile_sqls.fish
-      - run: npx vsce package --out sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
+      - run: nix build
+      - name: Prepare to upload
+        run: cp ./result/* sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:

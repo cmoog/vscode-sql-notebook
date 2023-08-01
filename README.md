@@ -27,3 +27,12 @@ Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Not
 ![Screen Shot 2021-12-30 at 1 30 39 PM](https://user-images.githubusercontent.com/7585078/147782929-f9b7846b-6911-45ed-8354-ff0130a912b1.png)
 
 ![Screen Shot 2021-12-30 at 1 34 32 PM](https://user-images.githubusercontent.com/7585078/147782853-c0ea8ecb-e5f7-410f-83c2-af3d0562302e.png)
+
+## FAQ
+
+**If the file is stored as a regular `.sql` file, how are cell boundaries detected?**
+
+Cell boundaries are inferred from the presence of two consecutive empty lines.
+
+Note: this can pose issues with certain code formatters. You will need to
+configure them to respect consecutive newlines.

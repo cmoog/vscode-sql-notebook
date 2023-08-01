@@ -1,41 +1,22 @@
 name: build
 on:
   push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
 
 jobs:
   package:
-    runs-on: ubuntu-20.04
-    defaults:
-      run:
-        shell: nix develop -c bash {0}
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: cachix/install-nix-action@v16
-      # TODO: implement build cache
-      - run: npm ci
-      - run: ./compile_sqls.fish
-      - run: npx vsce package --out sqlnotebook-${{ github.sha }}.vsix
+      - uses: DeterminateSystems/nix-installer-action@v4
+      - uses: DeterminateSystems/magic-nix-cache-action@v2
+      - run: nix build
+      - name: Prepare to upload
+        run: cp ./result/* sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
           name: sqlnotebook-${{ github.sha }}.vsix
           path: sqlnotebook-${{ github.sha }}.vsix
-  test:
-    runs-on: ubuntu-20.04
-    defaults:
-      run:
-        shell: nix develop -c bash {0}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-      - uses: cachix/install-nix-action@v16
-      - run: npm ci
-      - run: npm run lint
