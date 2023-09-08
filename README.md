@@ -14,13 +14,13 @@ and view output interactively.
 
 - Open any `.sql` file as a Notebook.
 - Execute query blocks in the Notebook UI and view output.
-- Configure database connections in the SQL Notebook sidepanel.
+- Configure database connections in the SQL Notebook side-panel.
 - Supports MySQL, PostgreSQL, SQLite, and MSSQL (OracleDB support coming soon).
-- (unstable) Built-in typed autocomplete with an embedded language server.
+- (unstable) Built-in typed auto-complete with an embedded language server.
 
 ## Usage
 
-Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format. Configure database connections in the SQL Notebook sidepanel.
+Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Notebook` format. Configure database connections in the SQL Notebook side-panel.
 
 ![Screen Shot 2021-12-30 at 1 30 29 PM](https://user-images.githubusercontent.com/7585078/147782921-78dca657-6737-4055-af46-c019e9df4ea3.png)
 
@@ -34,5 +34,5 @@ Open any `.sql` file with the `Open With` menu option. Then, select the `SQL Not
 
 Cell boundaries are inferred from the presence of two consecutive empty lines.
 
-Note: this can pose issues with certain code formatters. You will need to
+Note: this can pose issues with certain code formatting tools. You will need to
 configure them to respect consecutive newlines.
