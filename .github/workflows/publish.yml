@@ -15,6 +15,7 @@ jobs:
       - run: nix build
       - name: Prepare to upload
         run: cp ./result/* sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
+      - run: touch sqlnotebook-${{ env.RELEASE_VERSION }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
