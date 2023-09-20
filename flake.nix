@@ -51,9 +51,20 @@
             '';
             nodejs = pkgs.nodejs;
             buildCommands = [ "npm run build" ];
+            buildInputs = with pkgs; [ zip unzip ];
             installPhase = ''
-              mkdir -p $out
-              cp *.vsix $out/
+              # vsce errors when modtime of zipped files are > present
+              new_modtime="0101120000" # MMDDhhmmYY (just needs to be fixed and < present)
+              mkdir ./tmp
+              unzip -q ./*.vsix -d ./tmp
+
+              for file in $(find ./tmp/ -type f); do
+                touch -m "$new_modtime" "$file"
+                touch -t "$new_modtime" "$file"
+              done
+
+              cd ./tmp
+              zip -q -r $out .
             '';
           };
         };

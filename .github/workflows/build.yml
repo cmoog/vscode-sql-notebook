@@ -14,7 +14,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v2
       - run: nix build
       - name: Prepare to upload
-        run: cp ./result/* sqlnotebook-${{ github.sha }}.vsix
+        run: cp result sqlnotebook-${{ github.sha }}.vsix
       - name: Upload vsix as artifact
         uses: actions/upload-artifact@v1
         with:
