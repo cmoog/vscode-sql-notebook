@@ -155,6 +155,16 @@ async function createMySQLPool({
       password,
       database,
       multipleStatements,
+      typeCast(field, next) {
+        switch (field.type) {
+          case 'TIMESTAMP':
+          case 'DATE':
+          case 'DATETIME':
+            return field.string();
+          default:
+            return next();
+        }
+      },
     }),
     queryTimeout
   );
@@ -210,6 +220,8 @@ interface PostgresConfig extends BaseConfig {
   driver: 'postgres';
 }
 
+const identity = <T> (input: T) => input;
+
 async function createPostgresPool({
   host,
   port,
@@ -225,6 +237,21 @@ async function createPostgresPool({
     database,
     user,
     query_timeout: queryTimeout,
+    types: {
+      getTypeParser(id, format) {
+        switch (id) {
+          case pg.types.builtins.TIMESTAMP:
+          case pg.types.builtins.TIMESTAMPTZ:
+          case pg.types.builtins.TIME:
+          case pg.types.builtins.TIMETZ:
+          case pg.types.builtins.DATE:
+          case pg.types.builtins.INTERVAL:
+            return identity;
+          default:
+            return pg.types.getTypeParser(id, format);
+        }
+      }
+    }
   });
   return postgresPool(pool);
 }
