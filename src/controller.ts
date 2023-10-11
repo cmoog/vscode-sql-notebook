@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { ExecutionResult, Row, TabularResult } from './driver';
+import { ExecutionResult } from './driver';
 import { globalConnPool, notebookType } from './main';
+import { resultToMarkdownTable } from './markdown';
 
 export class SQLNotebookController {
   readonly controllerId = 'sql-notebook-executor';
@@ -77,7 +78,7 @@ export class SQLNotebookController {
     }
 
     if (typeof result === 'string') {
-      writeSuccess(execution, result);
+      writeSuccess(execution, [[text(result)]]);
       return;
     }
 
@@ -85,11 +86,14 @@ export class SQLNotebookController {
       result.length === 0 ||
       (result.length === 1 && result[0].length === 0)
     ) {
-      writeSuccess(execution, 'Successfully executed query');
+      writeSuccess(execution, [[text('Successfully executed query')]]);
       return;
     }
-    const tables = result.map(resultToMarkdownTable);
-    writeSuccess(execution, tables, 'text/markdown');
+
+    writeSuccess(execution, result.map(item => [
+      text(resultToMarkdownTable(item), "text/markdown"),
+      json(item)
+    ]));
   }
 }
 
@@ -100,77 +104,17 @@ function writeErr(execution: vscode.NotebookCellExecution, err: string) {
   execution.end(false, Date.now());
 }
 
+const { text, json } = vscode.NotebookCellOutputItem;
+
 function writeSuccess(
   execution: vscode.NotebookCellExecution,
-  text: string | string[],
-  mimeType?: string
+  outputs: vscode.NotebookCellOutputItem[][]
 ) {
-  const items = typeof text === 'string' ? [text] : text;
   execution.replaceOutput(
-    items.map(
-      (item) =>
-        new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(item, mimeType),
-        ])
+    outputs.map(
+      (items) =>
+        new vscode.NotebookCellOutput(items)
     )
   );
   execution.end(true, Date.now());
-}
-
-function resultToMarkdownTable(result: TabularResult): string {
-  if (result.length < 1) {
-    return '*Empty Results Table*';
-  }
-
-  const maxRows = getMaxRows();
-  if (result.length > maxRows) {
-    result = result.slice(0, maxRows);
-    result.push(
-      Object.fromEntries(Object.entries(result).map((pair) => [pair[0], '...']))
-    );
-  }
-  return `${markdownHeader(result[0])}\n${result.map(markdownRow).join('\n')}`;
-}
-
-function getMaxRows(): number {
-  const fallbackMaxRows = 25;
-  const maxRows: number | undefined = vscode.workspace
-    .getConfiguration('SQLNotebook')
-    .get('maxResultRows');
-  return maxRows ?? fallbackMaxRows;
-}
-
-function serializeCell(a: any): any {
-  try {
-    // serialize buffers as hex strings
-    if (Buffer.isBuffer(a)) {
-      return `0x${a.toString('hex')}`;
-    }
-    // attempt to serialize all remaining "object" values as JSON
-    if (typeof a === 'object') {
-      return JSON.stringify(a);
-    }
-    if (typeof a === 'string') {
-      return a.replace(/\n/g, '\\n').replace(/\r/g, '\\r');
-    }
-    return a;
-  } catch {
-    return a;
-  }
-}
-
-function markdownRow(row: Row): string {
-  const middle = Object.entries(row)
-    .map((pair) => pair[1])
-    .map(serializeCell)
-    .join(' | ');
-  return `| ${middle} |`;
-}
-
-function markdownHeader(obj: Row): string {
-  const keys = Object.keys(obj).join(' | ');
-  const divider = Object.keys(obj)
-    .map(() => '--')
-    .join(' | ');
-  return `| ${keys} |\n| ${divider} |`;
 }
