@@ -90,10 +90,13 @@ export class SQLNotebookController {
       return;
     }
 
-    writeSuccess(execution, result.map(item => [
-      text(resultToMarkdownTable(item), "text/markdown"),
-      json(item)
-    ]));
+    writeSuccess(
+      execution,
+      result.map((item) => [
+        text(resultToMarkdownTable(item), 'text/markdown'),
+        json(item),
+      ])
+    );
   }
 }
 
@@ -111,10 +114,7 @@ function writeSuccess(
   outputs: vscode.NotebookCellOutputItem[][]
 ) {
   execution.replaceOutput(
-    outputs.map(
-      (items) =>
-        new vscode.NotebookCellOutput(items)
-    )
+    outputs.map((items) => new vscode.NotebookCellOutput(items))
   );
   execution.end(true, Date.now());
 }

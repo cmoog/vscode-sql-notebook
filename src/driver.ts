@@ -220,7 +220,7 @@ interface PostgresConfig extends BaseConfig {
   driver: 'postgres';
 }
 
-const identity = <T> (input: T) => input;
+const identity = <T>(input: T) => input;
 
 async function createPostgresPool({
   host,
@@ -250,8 +250,8 @@ async function createPostgresPool({
           default:
             return pg.types.getTypeParser(id, format);
         }
-      }
-    }
+      },
+    },
   });
   return postgresPool(pool);
 }
