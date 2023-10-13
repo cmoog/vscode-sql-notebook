@@ -92,10 +92,13 @@ export class SQLNotebookController {
 
     writeSuccess(
       execution,
-      result.map((item) => [
-        text(resultToMarkdownTable(item), 'text/markdown'),
-        json(item),
-      ])
+      result.map((item) => {
+        const outputs = [text(resultToMarkdownTable(item), 'text/markdown')];
+        if (outputJsonMimeType()) {
+          outputs.push(json(item));
+        }
+        return outputs;
+      })
     );
   }
 }
@@ -117,4 +120,10 @@ function writeSuccess(
     outputs.map((items) => new vscode.NotebookCellOutput(items))
   );
   execution.end(true, Date.now());
+}
+
+function outputJsonMimeType(): boolean {
+  return (
+    vscode.workspace.getConfiguration('SQLNotebook').get('outputJSON') ?? false
+  );
 }
